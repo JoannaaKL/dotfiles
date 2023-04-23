@@ -5,6 +5,7 @@ uncommit = reset --soft HEAD^
 fa = fetch --all
 lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 lgns = log --name-status
+st = status
 [core]
   editor = vim
   excludesfile = ~/.gitignore
@@ -14,7 +15,7 @@ lgns = log --name-status
 [pull]
   ff = only
 [commit]
-  template = ~/git-config/.gitmessage
+  template = ~/.gitmessage
 [user]
 	email = joannaakl@github.com
 	name = Joanna Krzek-Lubowiecka
