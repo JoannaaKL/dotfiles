@@ -1,0 +1,22 @@
+[alias]
+br = branch
+co = checkout
+uncommit = reset --soft HEAD^
+fa = fetch --all
+lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+lgns = log --name-status
+[core]
+  editor = vim
+  excludesfile = ~/.gitignore
+[merge]
+  ff = only
+	conflictstyle = diff3
+[pull]
+  ff = only
+[commit]
+  template = ~/git-config/.gitmessage
+[user]
+	email = joannaakl@github.com
+	name = Joanna Krzek-Lubowiecka
+[url "git@github.com:"]
+	insteadOf = https://github.com/
