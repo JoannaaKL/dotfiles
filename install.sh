@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export USERNAME=`whoami`
+sudo chsh -s $(which zsh) $USERNAME
 
 create_symlinks() {
     # Get the directory in which this script lives.
@@ -24,6 +26,8 @@ FONT_DIR="$HOME/fonts"
 git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
 cd $FONT_DIR
 ./install.sh
+cd ..
+rm -rf $FONT_DIR
 
 echo "Setting up the Spaceship theme."
 ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
