@@ -19,15 +19,18 @@ create_symlinks() {
     done
 }
 
-create_symlinks
+install_fonts() {
+    echo "Installing fonts."
+    FONT_DIR="$HOME/fonts"
+    git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
+    cd $FONT_DIR
+    ./install.sh
+    cd ..
+    rm -rf $FONT_DIR
+}
 
-echo "Installing fonts."
-FONT_DIR="$HOME/fonts"
-git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
-cd $FONT_DIR
-./install.sh
-cd ..
-rm -rf $FONT_DIR
+create_symlinks
+install_fonts
 
 echo "Setting up the Spaceship theme."
 ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"

@@ -13,7 +13,7 @@ export PATH="/usr/local/bin:$PATH"
 
 ZSH_THEME="spaceship"
 export SPACESHIP_DIR_TRUNC=0
-ssh-add ~/.ssh/id_rsa
+# ssh-add ~/.ssh/id_rsa
 
 ENABLE_CORRECTION="true"
 
