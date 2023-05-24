@@ -20,7 +20,7 @@ install_fonts() {
     if [ ! -d "$HOME/fonts" ]; then
         echo "Installing fonts."    
         FONT_DIR="$HOME/fonts"
-        git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
+        git clone git@github.com:powerline/fonts.git $FONT_DIR --depth=1
         cd $FONT_DIR
         ./install.sh
         # cd ..
@@ -32,7 +32,7 @@ install_spaceship() {
     ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
     if [ ! -d "$ZSH_CUSTOM/themes/spaceship-prompt" ]; then
         echo "Setting up the Spaceship theme."
-        git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
+        git clone git@github.com:spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
         ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme" 
     fi
 }
