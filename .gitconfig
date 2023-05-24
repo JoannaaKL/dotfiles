@@ -21,8 +21,3 @@ st = status
 	name = Joanna Krzek-Lubowiecka
 [url "git@github.com:"]
 	insteadOf = https://github.com/
-[safe]
-	directory = /Users/joannaakl/runner/_work/testing-actions/testing-actions
-	directory = /Users/joannaakl/runner/_work/testing-actions/testing-actions
-	directory = /Users/joannaakl/runner/_work/testing-actions/testing-actions
-	directory = /Users/joannaakl/runner/_work/testing-actions/testing-actions
