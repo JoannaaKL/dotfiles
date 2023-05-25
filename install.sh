@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 create_symlinks() {
     # Get the directory in which this script lives.
     script_dir=$(dirname "$(readlink -f "$0")")
