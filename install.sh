@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
+export USERNAME=`whoami`
+sudo chsh -s $(which zsh) $USERNAME
+
 create_symlinks() {
     # Get the directory in which this script lives.
     script_dir=$(dirname "$(readlink -f "$0")")
@@ -23,7 +26,7 @@ install_fonts() {
     if [ ! -d "$HOME/fonts" ]; then
         echo "Installing fonts."    
         FONT_DIR="$HOME/fonts"
-        git clone git@github.com:powerline/fonts.git $FONT_DIR --depth=1
+        git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
         cd $FONT_DIR
         ./install.sh
         # cd ..
@@ -40,6 +43,6 @@ install_spaceship() {
     fi
 }
 
-create_symlinks
 install_fonts
 install_spaceship
+create_symlinks
