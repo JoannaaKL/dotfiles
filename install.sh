@@ -1,7 +1,5 @@
 #!/bin/bash
 set -e
-export USERNAME=`whoami`
-sudo chsh -s $(which zsh) $USERNAME
 
 create_symlinks() {
     # Get the directory in which this script lives.
@@ -29,8 +27,8 @@ install_fonts() {
         git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
         cd $FONT_DIR
         ./install.sh
-        # cd ..
-        # rm -rf $FONT_DIR
+        cd ..
+        rm -rf $FONT_DIR
     fi
 }
 
@@ -38,11 +36,10 @@ install_spaceship() {
     ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
     if [ ! -d "$ZSH_CUSTOM/themes/spaceship-prompt" ]; then
         echo "Setting up the Spaceship theme."
-        git clone git@github.com:spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
+        git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
         ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme" 
     fi
 }
-
+create_symlinks
 install_fonts
 install_spaceship
-create_symlinks
