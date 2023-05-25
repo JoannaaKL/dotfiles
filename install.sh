@@ -11,7 +11,10 @@ create_symlinks() {
     for file in $files; do
         name=$(basename $file)
         echo "Creating symlink to $name in home directory."
-        # rm -rf ~/$name
+        if [ -n "${CODESPACES}" ]; then
+            echo "Removing existing $name"
+            rm -rf ~/$name
+        fi
         ln -s $script_dir/$name ~/$name
     done
 }
