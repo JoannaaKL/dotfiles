@@ -37,6 +37,4 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 alias g="git"
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
-SPACESHIP_TIME_SHOW=true
-SPACESHIP_USER_SHOW=always
 
