@@ -6,3 +6,5 @@ SPACESHIP_USER_SHOW=always
 
 # Do not truncate path in repos
 SPACESHIP_DIR_TRUNC_REPO=false
+
+SPACESHIP_KUBECTL_SHOW=true
