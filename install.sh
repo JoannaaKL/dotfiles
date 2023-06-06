@@ -41,7 +41,7 @@ install_spaceship() {
 }
 install_fzf() {
      git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-     ~/.fzf/install	
+     ~/.fzf/install --completion --no-key-bindings --no-update-rc	
 }
 install_fzf
 create_symlinks
