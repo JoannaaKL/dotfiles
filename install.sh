@@ -16,10 +16,8 @@ create_symlinks() {
       echo "Removing existing $name"
       rm -rf ~/$name
     fi
-    if [ ! -e $script_dir/$name ]; then
-      echo "Creating symlink to $name in home directory."
-      ln -s $script_dir/$name ~/$name
-    fi
+    echo "Creating symlink to $name in home directory."
+    ln -s $script_dir/$name ~/$name
   done
   echo "$delimiter Creating symlinks done $delimiter"
 }
