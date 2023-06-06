@@ -73,7 +73,7 @@ install_nvim() {
 }
 
 install_fzf
-install_nvim
+# install_nvim
 create_symlinks
 install_fonts
 install_spaceship
