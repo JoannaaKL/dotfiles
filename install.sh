@@ -12,12 +12,14 @@ create_symlinks() {
   # Create a symbolic link to each file in the home directory.
   for file in $files; do
     name=$(basename $file)
-    echo "Creating symlink to $name in home directory."
     if [ -n "${CODESPACES}" ]; then
       echo "Removing existing $name"
       rm -rf ~/$name
     fi
-    ln -s $script_dir/$name ~/$name
+    if [ ! -e $script_dir/$name ]; then
+      echo "Creating symlink to $name in home directory."
+      ln -s $script_dir/$name ~/$name
+    fi
   done
   echo "$delimiter Creating symlinks done $delimiter"
 }
@@ -53,7 +55,23 @@ install_fzf() {
     echo "$delimiter Setting up fzf done $delimiter"
   fi
 }
+
+install_nvim() {
+  echo "$delimiter Setting up nvim $delimiter"
+  if [ $CODESPACE ]; then
+    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+    chmod u+x nvim.appimage
+    ./nvim.appimage --appimage-extract
+    ln -s "$(pwd)/squashfs-root/usr/bin/nvim" ~/bin/nvim
+    rm -f nvim.appimage
+  else
+    brew install neovim
+  fi
+  echo "$delimiter Setting up nvim done $delimiter"
+}
+
 install_fzf
+install_nvim
 create_symlinks
 install_fonts
 install_spaceship
