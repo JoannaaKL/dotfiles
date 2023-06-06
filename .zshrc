@@ -37,6 +37,6 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 alias g="git"
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
-
+export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

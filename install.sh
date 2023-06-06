@@ -1,47 +1,57 @@
 #!/bin/bash
 set -e
 script_dir=$(dirname "$(readlink -f "$0")")
+delimiter="***********"
 create_symlinks() {
-    # Get the directory in which this script lives.
-    echo $script_dir	
-    # Get a list of all files in this directory that start with a dot.
-    files=$(find . -maxdepth 1 -type f -name ".*")
+  # Get the directory in which this script lives.
+  echo "$delimiter Creating symlinks $delimiter"
+  echo $script_dir
+  # Get a list of all files in this directory that start with a dot.
+  files=$(find . -maxdepth 1 -type f -name ".*")
 
-    # Create a symbolic link to each file in the home directory.
-    for file in $files; do
-        name=$(basename $file)
-        echo "Creating symlink to $name in home directory."
-        if [ -n "${CODESPACES}" ]; then
-            echo "Removing existing $name"
-            rm -rf ~/$name
-        fi
-        ln -s $script_dir/$name ~/$name
-    done
+  # Create a symbolic link to each file in the home directory.
+  for file in $files; do
+    name=$(basename $file)
+    echo "Creating symlink to $name in home directory."
+    if [ -n "${CODESPACES}" ]; then
+      echo "Removing existing $name"
+      rm -rf ~/$name
+    fi
+    ln -s $script_dir/$name ~/$name
+  done
+  echo "$delimiter Creating symlinks done $delimiter"
 }
 
 install_fonts() {
-    if [ ! -d "$HOME/fonts" ]; then
-        echo "Installing fonts."    
-        FONT_DIR="$HOME/fonts"
-        git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
-        cd $FONT_DIR
-        ./install.sh
-        cd ..
-        rm -rf $FONT_DIR
-    fi
+  if [ ! -d "$HOME/fonts" ]; then
+    echo "$delimiter Installing fonts $delimiter"
+    FONT_DIR="$HOME/fonts"
+    git clone https://github.com/powerline/fonts.git $FONT_DIR --depth=1
+    cd $FONT_DIR
+    ./install.sh
+    cd ..
+    rm -rf $FONT_DIR
+    echo "$delimiter Installing fonts done $delimiter"
+  fi
 }
 
 install_spaceship() {
-    ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
-    if [ ! -d "$ZSH_CUSTOM/themes/spaceship-prompt" ]; then
-        echo "Setting up the Spaceship theme."
-        git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
-        ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme" 
-    fi
+  ZSH_CUSTOM="$HOME/.oh-my-zsh/custom"
+  if [ ! -d "$ZSH_CUSTOM/themes/spaceship-prompt" ]; then
+    echo "$delimiter Setting up the Spaceship theme $delimiter"
+    git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
+    ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme"
+    echo "$delimiter Setting up the Spaceship theme done $delimiter"
+  fi
 }
+
 install_fzf() {
-     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-     ~/.fzf/install --completion --no-key-bindings --no-update-rc	
+  if [ ! -d ~/.fzf ]; then
+    echo "$delimiter Setting up fzf $delimiter"
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install --completion --no-key-bindings --no-update-rc
+    echo "$delimiter Setting up fzf done $delimiter"
+  fi
 }
 install_fzf
 create_symlinks
