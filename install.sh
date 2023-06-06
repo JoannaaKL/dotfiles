@@ -58,7 +58,7 @@ install_fzf() {
 
 install_nvim() {
   echo "$delimiter Setting up nvim $delimiter"
-  if [ $CODESPACE ]; then
+  if [ -n "${CODESPACES}" ]; then
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
     chmod u+x nvim.appimage
     ./nvim.appimage --appimage-extract

@@ -38,5 +38,5 @@ source $ZSH/oh-my-zsh.sh
 alias g="git"
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
-
+export EDITOR=nvim
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
