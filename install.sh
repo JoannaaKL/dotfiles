@@ -39,6 +39,11 @@ install_spaceship() {
         ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme" 
     fi
 }
+install_fzf() {
+     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+     ~/.fzf/install	
+}
+install_fzf
 create_symlinks
 install_fonts
 install_spaceship

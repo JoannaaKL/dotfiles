@@ -38,3 +38,5 @@ source $ZSH/oh-my-zsh.sh
 alias g="git"
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
