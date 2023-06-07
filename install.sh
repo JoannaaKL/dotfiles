@@ -59,11 +59,10 @@ install_nvim() {
   if [ -n "${CODESPACES}" ]; then
     mkdir -p ~/bin
     curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+    chmod u+x nvim.appimage
     ./nvim.appimage --appimage-extract
-    ./squashfs-root/AppRun --version
 
-    sudo mv squashfs-root /
-    sudo ln -s /squashfs-root/AppRun /usr/bin/nvim
+    ln -s "$(pwd)/squashfs-root/usr/bin/nvim" ~/bin/nvim
   else
     brew install neovim
   fi
@@ -71,7 +70,7 @@ install_nvim() {
 }
 
 install_fzf
-# install_nvim
+install_nvim
 create_symlinks
 install_fonts
 install_spaceship
