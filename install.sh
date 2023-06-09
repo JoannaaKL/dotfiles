@@ -68,10 +68,19 @@ install_nvim() {
   fi
   echo "$delimiter Setting up nvim done $delimiter"
 }
+install_git_delta() {
+  if [ ! -n "${CODESPACES}" ]; then
+    brew install git-delta
+  else
+    curl -sS https://webi.sh/delta | sh
+  fi
+}
 
+install_git_delta
 install_fzf
 install_nvim
 create_symlinks
 install_fonts
 install_spaceship
 export SPACESHIP_CONFIG="$(pwd)/.spaceship.zsh"
+export PATH="$HOME/.local/bin:$PATH"

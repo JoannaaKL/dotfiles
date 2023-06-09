@@ -11,6 +11,9 @@
 [core]
   editor = vim
   excludesfile = ~/.gitignore
+  pager = delta
+[diff]
+  colorMoved = default
 [merge]
   ff = only
   conflictstyle = diff3
@@ -18,6 +21,18 @@
   ff = only
 [commit]
   template = ~/.gitmessage
+[delta]
+  light = true 
+  side-by-side = true
+  navigate = true
+[interactive]
+    diffFilter = delta --color-only
+[pager]
+    diff = delta
+    show = delta
+    log = delta
+    blame = delta
+    reflog = delta
 [user]
   email = joannaakl@github.com
   name = Joanna Krzek-Lubowiecka
