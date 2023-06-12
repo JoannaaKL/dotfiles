@@ -73,6 +73,7 @@ install_git_delta() {
     brew install git-delta
   else
     curl -sS https://webi.sh/delta | sh
+    #ln -s "$(pwd)/.local/share/delta .local/share/delta
   fi
 }
 

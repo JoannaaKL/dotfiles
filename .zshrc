@@ -12,7 +12,6 @@ export ZSH="$HOME/.oh-my-zsh"
 export PATH="/usr/local/bin:$PATH"
 
 ZSH_THEME="spaceship"
-export SPACESHIP_DIR_TRUNC=0
 # ssh-add ~/.ssh/id_rsa
 
 ENABLE_CORRECTION="true"
@@ -40,3 +39,4 @@ export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 export EDITOR=nvim
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+echo "machine goproxy.githubapp.com login nobody password $GITHUB_TOKEN" >> $HOME/.netrc
