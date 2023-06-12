@@ -8,6 +8,9 @@
   lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
   lgns = log --name-status
   st = status
+[commit]
+  gpgsign = false	
+  template = ~/.gitmessage
 [core]
   editor = vim
   excludesfile = ~/.gitignore
@@ -19,8 +22,6 @@
   conflictstyle = diff3
 [pull]
   ff = only
-[commit]
-  template = ~/.gitmessage
 [delta]
   light = true 
   side-by-side = true
