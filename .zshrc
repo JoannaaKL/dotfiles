@@ -40,3 +40,4 @@ export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 export EDITOR=nvim
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 echo "machine goproxy.githubapp.com login nobody password $GITHUB_TOKEN" >> $HOME/.netrc
+export GPG_TTY=$(tty)

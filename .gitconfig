@@ -9,7 +9,6 @@
   lgns = log --name-status
   st = status
 [commit]
-  gpgsign = false	
   template = ~/.gitmessage
 [core]
   editor = vim
