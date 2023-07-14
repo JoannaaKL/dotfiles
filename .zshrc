@@ -16,7 +16,11 @@ ZSH_THEME="spaceship"
 
 ENABLE_CORRECTION="true"
 
-plugins=(git)
+plugins=(git
+         alias-finder
+	 kubectl
+         docker
+	)
 
 source $ZSH/oh-my-zsh.sh
 

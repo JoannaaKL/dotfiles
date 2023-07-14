@@ -11,7 +11,7 @@
 [commit]
   template = ~/.gitmessage
 [core]
-  editor = vim
+	editor = nvim
   excludesfile = ~/.gitignore
   pager = delta
 [diff]
