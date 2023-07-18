@@ -1,38 +1,39 @@
 [alias]
-  br = branch
-  ca = commit --amend
-  cm = commit -m
-  co = checkout
-  uncommit = reset --soft HEAD^
-  fa = fetch --all
-  lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-  lgns = log --name-status
-  st = status
+  	br = branch
+  	ca = commit --amend
+  	cm = commit -m
+	co = checkout
+	cp = cherry-pick
+  	uncommit = reset --soft HEAD^
+  	fa = fetch --all
+  	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  	lgns = log --name-status
+ 	st = status
 [commit]
-  template = ~/.gitmessage
+  	template = ~/.gitmessage
 [core]
-	editor = nvim
-  excludesfile = ~/.gitignore
-  pager = delta
+  	editor = nvim
+  	excludesfile = ~/.gitignore
+  	pager = delta
 [diff]
-  colorMoved = default
+  	colorMoved = default
 [merge]
-  ff = only
-  conflictstyle = diff3
+  	ff = only
+  	conflictstyle = diff3
 [pull]
-  ff = only
+  	ff = only
 [delta]
-  light = true 
-  side-by-side = true
-  navigate = true
+  	light = true 
+  	side-by-side = true
+  	navigate = true
 [interactive]
-    diffFilter = delta --color-only
+    	diffFilter = delta --color-only
 [pager]
-    diff = delta
-    show = delta
-    log = delta
-    blame = delta
-    reflog = delta
+    	diff = delta
+   	show = delta
+    	log = delta
+    	blame = delta
+    	reflog = delta
 [user]
-  email = joannaakl@github.com
-  name = JoannaaKL
+  	email = joannaakl@github.com
+  	name = JoannaaKL
