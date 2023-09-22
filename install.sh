@@ -69,7 +69,7 @@ install_nvim() {
   echo "$delimiter Setting up nvim done $delimiter"
 }
 
-install_fx()
+install_fx() {
  if [ -n "${CODESPACES}" ]; then
    curl https://fx.wtf/install.sh | sh
  else
@@ -93,5 +93,6 @@ install_nvim
 create_symlinks
 install_fonts
 install_spaceship
+install_fx
 export SPACESHIP_CONFIG="$(pwd)/.spaceship.zsh"
 export PATH="$HOME/.local/bin:$PATH"
