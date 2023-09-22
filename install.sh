@@ -68,6 +68,15 @@ install_nvim() {
   fi
   echo "$delimiter Setting up nvim done $delimiter"
 }
+
+install_fx()
+ if [ -n "${CODESPACES}" ]; then
+   curl https://fx.wtf/install.sh | sh
+ else
+   brew install fx
+ fi;
+}
+
 install_git_delta() {
   if [ ! -n "${CODESPACES}" ]; then
     brew install git-delta
@@ -76,6 +85,7 @@ install_git_delta() {
     #ln -s "$(pwd)/.local/share/delta .local/share/delta
   fi
 }
+
 
 install_git_delta
 install_fzf

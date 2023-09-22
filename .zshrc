@@ -39,6 +39,10 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 alias g="git"
+alias ccreate="gh codespace create"
+alias cdelete="gh codespace delete"
+alias clist="gh codespace list"
+alias copen="gh codespace code"
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 export EDITOR=nvim
