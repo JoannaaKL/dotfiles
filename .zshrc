@@ -20,6 +20,7 @@ plugins=(git
          alias-finder
 	 kubectl
          docker
+	 gh
 	)
 
 source $ZSH/oh-my-zsh.sh
