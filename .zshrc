@@ -44,6 +44,7 @@ alias ccreate="gh codespace create"
 alias cdelete="gh codespace delete"
 alias clist="gh codespace list"
 alias copen="gh codespace code"
+alias cssh="gh codespace ssh --config"
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 export EDITOR=nvim
