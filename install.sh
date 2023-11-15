@@ -93,6 +93,5 @@ install_nvim
 create_symlinks
 install_fonts
 install_spaceship
-install_fx
 export SPACESHIP_CONFIG="$(pwd)/.spaceship.zsh"
 export PATH="$HOME/.local/bin:$PATH"
