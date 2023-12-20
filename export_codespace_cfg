@@ -1,0 +1,8 @@
+echo "Remove old codespace_config"
+  rm -rf codespace_config
+echo "Remove old entries from .ssh/config"
+  less ~/.ssh/config_backup > ~/.ssh/config
+echo "Save ssh config for available codespaces"
+  gh codespace ssh --config | sed -e 's/ -- -i \/Users\/joannaakl\/.ssh\/codespaces.auto//g; s/IdentityFile \/Users\/joannaakl\/.ssh\/codespaces.auto//g' > codespace_config
+echo "Save cleaned codespaces ssh config in .ssh/config"
+  cat codespace_config >> ~/.ssh/config
