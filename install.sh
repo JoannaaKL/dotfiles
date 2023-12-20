@@ -85,7 +85,24 @@ install_git_delta() {
     #ln -s "$(pwd)/.local/share/delta .local/share/delta
   fi
 }
+merge_zsh_config(){
+  # Save the existing zshrc file
+  if [[ -n "$CODESPACES" && -e "$HOME/.zshrc" ]]; then
+    cp "$HOME/.zshrc" "$HOME/.zshrc_cs"
 
+    sed -i '1,/# Example aliases/d' "$HOME/.zshrc_cs"
+  fi
+
+  # Copy over .zshrc file
+  SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+  echo "Copying .zshrc file from $SCRIPT_DIR/.zshrc to $HOME/"
+  cp "$SCRIPT_DIR/.zshrc" "$HOME"
+
+  # Merge the zshrc with the pre-existing one
+  if [[ -n "$CODESPACES" && -e "$HOME/.zshrc_cs" ]]; then
+    cat "$HOME/.zshrc_cs" >> "$HOME/.zshrc"
+  fi
+}
 
 install_git_delta
 install_fzf
@@ -93,5 +110,6 @@ install_nvim
 create_symlinks
 install_fonts
 install_spaceship
+merge_zsh_config
 export SPACESHIP_CONFIG="$(pwd)/.spaceship.zsh"
 export PATH="$HOME/.local/bin:$PATH"
