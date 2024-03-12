@@ -93,7 +93,7 @@ merge_zsh_config(){
 }
 
 merge_zsh_config
-install_git_delta
+# install_git_delta
 install_fzf
 install_nvim
 create_symlinks
