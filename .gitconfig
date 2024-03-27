@@ -22,18 +22,6 @@
   	conflictstyle = diff3
 [pull]
   	ff = only
-[delta]
-  	light = true 
-  	side-by-side = true
-  	navigate = true
-[interactive]
-    	diffFilter = delta --color-only
-[pager]
-    	diff = delta
-   	show = delta
-    	log = delta
-    	blame = delta
-    	reflog = delta
 [user]
   	email = joannaakl@github.com
   	name = JoannaaKL
