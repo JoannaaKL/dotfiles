@@ -14,7 +14,6 @@
 [core]
   	editor = nvim
   	excludesfile = ~/.gitignore
-  	pager = delta
 [diff]
   	colorMoved = default
 [merge]
