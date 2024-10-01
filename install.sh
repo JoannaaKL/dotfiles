@@ -22,6 +22,14 @@ create_symlinks() {
   echo "$delimiter Creating symlinks done $delimiter"
 }
 
+install_tmux() {
+  if [ -n "${CODESPACES}" ]; then
+    apt install tmux
+  else
+    brew install tmux
+  fi
+}
+
 install_fonts() {
   if [ ! -d "$HOME/fonts" ]; then
     echo "$delimiter Installing fonts $delimiter"
@@ -94,6 +102,7 @@ merge_zsh_config(){
 
 merge_zsh_config
 # install_git_delta
+# install_tmux
 install_fzf
 install_nvim
 create_symlinks
