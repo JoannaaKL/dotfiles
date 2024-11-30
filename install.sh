@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 script_dir=$(dirname "$(readlink -f "$0")")
 delimiter="***********"
 create_symlinks() {
@@ -22,14 +21,6 @@ create_symlinks() {
   echo "$delimiter Creating symlinks done $delimiter"
 }
 
-install_tmux() {
-  if [ -n "${CODESPACES}" ]; then
-    apt install tmux
-  else
-    brew install tmux
-  fi
-}
-
 install_fonts() {
   if [ ! -d "$HOME/fonts" ]; then
     echo "$delimiter Installing fonts $delimiter"
@@ -50,15 +41,6 @@ install_spaceship() {
     git clone https://github.com/spaceship-prompt/spaceship-prompt.git "$ZSH_CUSTOM/themes/spaceship-prompt" --depth=1
     ln -s "$ZSH_CUSTOM/themes/spaceship-prompt/spaceship.zsh-theme" "$ZSH_CUSTOM/themes/spaceship.zsh-theme"
     echo "$delimiter Setting up the Spaceship theme done $delimiter"
-  fi
-}
-
-install_fzf() {
-  if [ ! -d ~/.fzf ]; then
-    echo "$delimiter Setting up fzf $delimiter"
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install --completion --no-key-bindings --no-update-rc
-    echo "$delimiter Setting up fzf done $delimiter"
   fi
 }
 
@@ -100,10 +82,24 @@ merge_zsh_config(){
   fi
 }
 
+codespaces_setup(){
+	if [ -n "$CODESPACES" ]; then
+		echo "Codespaces setup"
+		apt install tmux
+	fi;
+}
+
+local_setup(){
+	if [ ! -n "$CODESPACES" ]; then
+		echo "**Local setup**"
+		echo "Install tmux"
+		brew install tmux
+	fi;
+}
+
 merge_zsh_config
-# install_git_delta
-# install_tmux
-install_fzf
+local_setup
+codespaces_setup
 install_nvim
 create_symlinks
 install_fonts
