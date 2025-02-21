@@ -84,17 +84,34 @@ merge_zsh_config(){
 
 codespaces_setup(){
 	if [ -n "$CODESPACES" ]; then
-		echo "Codespaces setup"
-		apt install tmux
+		echo "***Codespaces setup***"
+		install "tmux" "apt install tmux"
+		install "bat" "apt install bat"
+		install "rg" "apt-get install ripgrep"
+		echo "***Codespaces setup done***"
 	fi;
 }
 
 local_setup(){
 	if [ ! -n "$CODESPACES" ]; then
-		echo "**Local setup**"
-		echo "Install tmux"
-		brew install tmux
+		echo "***Local setup***"
+		install "tmux" "brew install tmux"
+		install "bat" "brew install bat"
+		install "rg" "brew install ripgrep"
+		echo "***Local setup done***"
 	fi;
+}
+
+install(){
+    pkg_name=$1
+    cmd_if_not_installed=$2	
+    if command -v $pkg_name &> /dev/null
+    then
+        echo "$pkg_name is installed"
+    else
+        echo "$pkg_name is not installed, installing..."
+	eval $cmd_if_not_installed
+    fi
 }
 
 merge_zsh_config
