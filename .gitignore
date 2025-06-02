@@ -1,3 +1,5 @@
 *.idea
 *.zwc
 .gitconfig
+codespace_config
+nvim.appimage
