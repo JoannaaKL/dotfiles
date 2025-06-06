@@ -12,7 +12,7 @@
 [commit]
   	template = ~/.gitmessage
 [core]
-  	editor = nvim
+  	editor = [nvim,vi]
   	excludesfile = ~/.gitignore
 [diff]
   	colorMoved = default
