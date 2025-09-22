@@ -1,54 +1,65 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
 
 # Helper functions for dotfiles installation
-
-# Constants
 ALREADY_INSTALLED_MSG="is already installed"
 
-codespaces_setup(){
-	echo "***Codespaces setup***"
-    merge_zsh_config
-    install "tmux" "apt install tmux"
-	install "bat" "apt install bat"
-	install "rg" "apt-get install ripgrep"
-    codespaces_install_shellcheck
-	echo "***Codespaces setup done***"
+log_helpers(){ printf "[helpers] %s\n" "$*"; }
+
+# Generic install wrapper: install_if_missing <binary> <command...>
+install_if_missing(){
+    local bin="$1"; shift
+    if command -v "$bin" >/dev/null 2>&1; then
+        log_helpers "$bin $ALREADY_INSTALLED_MSG"
+        return 0
+    fi
+    log_helpers "Installing $bin"
+    "$@"
 }
 
-local_setup(){
-	echo "***Local setup***"
-	install "tmux" "brew install tmux"
-	install "bat" "brew install bat"
-    install "rg" "brew install ripgrep"
-    local_install_shellcheck
-	echo "***Local setup done***"
-}
-
-codespaces_install_shellcheck() {
-    scversion="latest"
-    wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${scversion?}/shellcheck-${scversion?}.linux.x86_64.tar.xz" | tar -xJv
-    cp "shellcheck-${scversion}/shellcheck" /usr/bin/
+codespaces_install_shellcheck(){
+    local scversion="v0.10.0" # pinned for reproducibility
+    if command -v shellcheck >/dev/null 2>&1; then
+        log_helpers "shellcheck $ALREADY_INSTALLED_MSG"; return 0; fi
+    local url="https://github.com/koalaman/shellcheck/releases/download/${scversion}/shellcheck-${scversion}.linux.x86_64.tar.xz"
+    local tmpdir
+    tmpdir="$(mktemp -d)"
+    curl -fsSL "$url" | tar -xJ -C "$tmpdir"
+    sudo install -m 0755 "$tmpdir/shellcheck-${scversion}/shellcheck" /usr/local/bin/shellcheck
     shellcheck --version
 }
 
-local_install_shellcheck() {
-   brew install shellcheck
-}
-
-install(){
-    pkg_name=$1
-    cmd_if_not_installed=$2	
-    if command -v "$pkg_name" &> /dev/null
-    then
-        echo "$pkg_name $ALREADY_INSTALLED_MSG"
+local_install_shellcheck(){
+    if command -v shellcheck >/dev/null 2>&1; then
+        log_helpers "shellcheck $ALREADY_INSTALLED_MSG"; return 0; fi
+    if command -v brew >/dev/null 2>&1; then
+        brew install shellcheck
     else
-        echo "$pkg_name is not installed, installing..."
-	eval "$cmd_if_not_installed"
+        log_helpers "brew not found; skipping shellcheck"
     fi
 }
 
+codespaces_setup(){
+    log_helpers "*** Codespaces setup ***"
+    install_if_missing tmux sudo apt-get update -y && sudo apt-get install -y tmux
+    install_if_missing bat sudo apt-get install -y bat
+    install_if_missing rg sudo apt-get install -y ripgrep
+    codespaces_install_shellcheck
+    log_helpers "*** Codespaces setup done ***"
+}
+
+local_setup(){
+    log_helpers "*** Local setup ***"
+    install_if_missing tmux brew install tmux
+    install_if_missing bat brew install bat
+    install_if_missing rg brew install ripgrep
+    local_install_shellcheck
+    log_helpers "*** Local setup done ***"
+}
+
 setup(){
-    if [ -n "$CODESPACES" ]; then
+    if [[ -n "${CODESPACES:-}" ]]; then
         codespaces_setup
     else
         local_setup
