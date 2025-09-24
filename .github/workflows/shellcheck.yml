@@ -1,0 +1,46 @@
+name: Shell Lint
+
+on:
+  push:
+    paths:
+      - '**.sh'
+      - '.github/workflows/shellcheck.yml'
+  pull_request:
+    paths:
+      - '**.sh'
+      - '.github/workflows/shellcheck.yml'
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update -y && sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        run: |
+          set -euo pipefail
+          echo "Scanning shell scripts..."
+          # Find all tracked *.sh files plus executable scripts with bash shebang
+          SCRIPTS=$(git ls-files '*.sh')
+          # Optionally include non-.sh executables with bash shebang
+          while IFS= read -r f; do
+            if head -1 "$f" | grep -qE '^#!.*bash'; then
+              SCRIPTS+=$'\n'$f
+            fi
+          done < <(git ls-files | grep -v '\.sh$')
+
+          # De-duplicate list
+          echo "$SCRIPTS" | sort -u > /tmp/scripts.list
+          echo "Files to check:"; cat /tmp/scripts.list
+          # Run shellcheck (excluding vendor or 3rd-party dirs if any in future)
+          xargs -a /tmp/scripts.list -r shellcheck --severity=style
+
+      - name: Upload SARIF (optional code scanning)
+        if: false
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
