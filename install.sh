@@ -82,12 +82,18 @@ install_neovim(){
     log "nvim $ALREADY_INSTALLED_MSG"; return 0; fi
   if [[ -n "${CODESPACES:-}" ]]; then
     mkdir -p "$HOME/bin"
+    local nvim_cache_dir="$HOME/.local/share/neovim-appimage"
+    mkdir -p "$nvim_cache_dir"
     local appimage_url="https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
-    local appimage_path="$SCRIPT_DIR/nvim.appimage"
-    curl -fsSL -o "$appimage_path" "$appimage_url"
-    chmod +x "$appimage_path"
-    "$appimage_path" --appimage-extract >/dev/null
-    ln -sfn "$SCRIPT_DIR/squashfs-root/usr/bin/nvim" "$HOME/bin/nvim"
+    local appimage_path="$nvim_cache_dir/nvim.appimage"
+    if [[ ! -f "$appimage_path" ]]; then
+      curl -fsSL -o "$appimage_path" "$appimage_url"
+      chmod +x "$appimage_path"
+    fi
+    if [[ ! -d "$nvim_cache_dir/squashfs-root" ]]; then
+      (cd "$nvim_cache_dir" && "$appimage_path" --appimage-extract >/dev/null)
+    fi
+    ln -sfn "$nvim_cache_dir/squashfs-root/usr/bin/nvim" "$HOME/bin/nvim"
   else
     command -v brew >/dev/null 2>&1 || { err "Homebrew is required to install neovim"; return 1; }
     brew install neovim
