@@ -15,7 +15,7 @@ mkdir -p "$SSH_DIR"
 
 echo "Generating Codespaces SSH config block..." >&2
 TMP=$(mktemp)
-gh codespace ssh --config | sed -E 's@ -- -i .*codespaces\.auto@@g; s@IdentityFile .*codespaces\.auto@@g' > "$TMP"
+gh codespace ssh --config | sed -E 's@ -- -i [^ ]*codespaces\.auto@@g; s@IdentityFile [^ ]*codespaces\.auto@@g' > "$TMP"
 
 # Remove previous managed block if present
 if grep -q "$MANAGED_START" "$CONFIG_FILE" 2>/dev/null; then
