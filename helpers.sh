@@ -42,7 +42,7 @@ local_install_shellcheck(){
 
 codespaces_setup(){
     log_helpers "*** Codespaces setup ***"
-    install_if_missing tmux sudo apt-get update -y && sudo apt-get install -y tmux
+    install_if_missing tmux bash -c 'sudo apt-get update -y && sudo apt-get install -y tmux'
     install_if_missing bat sudo apt-get install -y bat
     install_if_missing rg sudo apt-get install -y ripgrep
     codespaces_install_shellcheck
