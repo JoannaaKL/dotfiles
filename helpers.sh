@@ -45,6 +45,7 @@ codespaces_setup(){
     install_if_missing tmux bash -c 'sudo apt-get update -y && sudo apt-get install -y tmux'
     install_if_missing bat sudo apt-get install -y bat
     install_if_missing rg sudo apt-get install -y ripgrep
+    install_if_missing nvim sudo apt-get install -y neovim
     codespaces_install_shellcheck
     log_helpers "*** Codespaces setup done ***"
 }
@@ -54,6 +55,7 @@ local_setup(){
     install_if_missing tmux brew install tmux
     install_if_missing bat brew install bat
     install_if_missing rg brew install ripgrep
+    install_if_missing rg brew install neovim
     local_install_shellcheck
     log_helpers "*** Local setup done ***"
 }
