@@ -76,63 +76,6 @@ install_spaceship(){
   log "Spaceship theme installed"
 }
 
-install_neovim(){
-  section "Setting up Neovim"
-  if command -v nvim >/dev/null 2>&1; then
-    log "nvim $ALREADY_INSTALLED_MSG"; return 0; fi
-  if [[ -n "${CODESPACES:-}" ]]; then
-    mkdir -p "$HOME/bin"
-    local nvim_cache_dir="$HOME/.local/share/neovim-appimage"
-    mkdir -p "$nvim_cache_dir"
-    local appimage_url="https://github.com/neovim/neovim/releases/latest/download/nvim.appimage"
-    local appimage_path="$nvim_cache_dir/nvim.appimage"
-    if [[ ! -f "$appimage_path" ]]; then
-      curl -fsSL -o "$appimage_path" "$appimage_url"
-      chmod +x "$appimage_path"
-    fi
-    if [[ ! -d "$nvim_cache_dir/squashfs-root" ]]; then
-      (cd "$nvim_cache_dir" && "$appimage_path" --appimage-extract >/dev/null)
-    fi
-    ln -sfn "$nvim_cache_dir/squashfs-root/usr/bin/nvim" "$HOME/bin/nvim"
-  else
-    command -v brew >/dev/null 2>&1 || { err "Homebrew is required to install neovim"; return 1; }
-    brew install neovim
-  fi
-  if [[ ! -f "$HOME/.config/nvim/init.lua" && ! -f "$HOME/.config/nvim/init.vim" ]]; then
-    mkdir -p "$HOME/.config/nvim"
-    cat > "$HOME/.config/nvim/init.lua" <<'EOF'
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.termguicolors = true
-EOF
-  fi
-  log "Neovim installed"
-}
-
-install_git_delta(){
-  section "Installing git delta"
-  if command -v delta >/dev/null 2>&1; then
-    log "delta $ALREADY_INSTALLED_MSG"; return 0; fi
-  if [[ -n "${CODESPACES:-}" ]]; then
-    curl -fsSL https://github.com/dandavison/delta/releases/latest/download/delta-linux.tar.gz -o /tmp/delta.tgz || { warn "delta download failed"; return 0; }
-    tar -xzf /tmp/delta.tgz -C /tmp
-    local bin_path
-    bin_path="$(find /tmp -maxdepth 2 -type f -name delta | head -n1)"
-    install -m 0755 "$bin_path" "$HOME/bin/delta"
-  else
-    brew install git-delta
-  fi
-}
-
-install_gh_copilot(){
-  section "Installing GitHub Copilot CLI extension"
-  if ! command -v gh >/dev/null 2>&1; then
-    warn "gh not installed; skipping Copilot extension"; return 0; fi
-  if gh extension list | grep -q "github/gh-copilot"; then
-    log "GitHub Copilot CLI extension $ALREADY_INSTALLED_MSG"; return 0; fi
-  gh extension install github/gh-copilot || warn "Failed to install gh-copilot extension"
-}
-
 preflight(){
   section "Preflight checks"
   local required=(git curl)
@@ -145,9 +88,6 @@ preflight(){
 main(){
   preflight
   setup             # environment-specific base install (helpers.sh)
-  install_neovim
-  install_git_delta
-  install_gh_copilot
   symlink_dotfiles
   install_fonts
   install_spaceship
