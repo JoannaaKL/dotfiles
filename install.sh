@@ -53,62 +53,6 @@ install_spaceship() {
   echo "$delimiter Setting up the Spaceship theme done $delimiter"
 }
 
-install_nvim() {
-  echo "$delimiter Setting up nvim $delimiter"
-  
-  # Check if nvim is already installed
-  if command -v nvim &> /dev/null; then
-    echo "nvim $ALREADY_INSTALLED_MSG"
-    echo "$delimiter Setting up nvim done $delimiter"
-    return 0
-  fi
-  
-  if [ -n "${CODESPACES}" ]; then
-    mkdir -p ~/bin
-    curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-    chmod u+x nvim.appimage
-    ./nvim.appimage --appimage-extract
-
-    ln -s "$(pwd)/squashfs-root/usr/bin/nvim" ~/bin/nvim
-  else
-    brew install neovim
-  fi
-  echo "$delimiter Setting up nvim done $delimiter"
-}
-
-install_git_delta() {
-  if [ -z "${CODESPACES}" ]; then
-    brew install git-delta
-  else
-    curl -sS https://webi.sh/delta | sh
-    ln -s "$(pwd)/.local/share/delta" ".local/share/delta"
-  fi
-}
-
-install_gh_copilot() {
-  echo "$delimiter Installing GitHub Copilot CLI extension $delimiter"
-  
-  # Check if gh CLI is installed first
-  if ! command -v gh &> /dev/null; then
-    echo "GitHub CLI (gh) is not installed. Please install it first."
-    return 1
-  fi
-  
-  # Check if the extension is already installed
-  if gh extension list | grep -q "github/gh-copilot"; then
-    echo "GitHub Copilot CLI extension $ALREADY_INSTALLED_MSG"
-  else
-    echo "Installing GitHub Copilot CLI extension..."
-    if ! gh extension install github/gh-copilot; then
-      echo "Failed to install GitHub Copilot CLI extension"
-      return 1
-    fi
-    echo "GitHub Copilot CLI extension installed successfully"
-  fi
-  
-  echo "$delimiter Installing GitHub Copilot CLI extension done $delimiter"
-}
-
 merge_zsh_config(){
   echo "Copying contents of .zshrc from $HOME/.zshrc to $script_dir/.zshrc"
   if [[ -e "$HOME/.zshrc" ]]; then
@@ -117,8 +61,6 @@ merge_zsh_config(){
 }
 
 setup
-install_nvim
-install_gh_copilot
 create_symlinks
 install_fonts
 install_spaceship
