@@ -40,6 +40,20 @@ local_install_shellcheck(){
     fi
 }
 
+ensure_goproxy_netrc(){
+  if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+    log_helpers "GITHUB_TOKEN not set; skipping goproxy netrc entry"
+    return 0
+  fi
+  local netrc_path="${HOME}/.netrc"
+  if [[ -f "$netrc_path" ]] && grep -q "goproxy.githubapp.com" "$netrc_path"; then
+    log_helpers "goproxy.netrc entry detected; skipping update"
+    return 0
+  fi
+  echo "machine goproxy.githubapp.com login nobody password ${GITHUB_TOKEN}" >> "$netrc_path"
+  log_helpers "goproxy netrc entry configured"
+}
+
 codespaces_setup(){
     log_helpers "*** Codespaces setup ***"
     install_if_missing tmux bash -c 'sudo apt-get update -y && sudo apt-get install -y tmux'
@@ -52,6 +66,7 @@ codespaces_setup(){
 
 local_setup(){
     log_helpers "*** Local setup ***"
+    ensure_goproxy_netrc
     install_if_missing tmux brew install tmux
     install_if_missing bat brew install bat
     install_if_missing rg brew install ripgrep
