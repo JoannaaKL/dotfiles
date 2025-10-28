@@ -40,6 +40,7 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 alias g="git"
+alias cl="clear"
 alias ccreate="gh codespace create"
 alias cdelete="gh codespace delete"
 alias clist="gh codespace list"
@@ -51,3 +52,5 @@ export EDITOR=nvim
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 echo "machine goproxy.githubapp.com login nobody password $GITHUB_TOKEN" >> $HOME/.netrc
 export GPG_TTY=$(tty)
+export GOPATH="$HOME/go"
+export PATH="$PATH:$GOPATH/bin"
