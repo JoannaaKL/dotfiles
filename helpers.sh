@@ -60,6 +60,7 @@ codespaces_setup(){
     install_if_missing bat sudo apt-get install -y bat
     install_if_missing rg sudo apt-get install -y ripgrep
     install_if_missing nvim sudo apt-get install -y neovim
+    install_if_missing fzf sudo apt-get install -y fzf
     codespaces_install_shellcheck
     log_helpers "*** Codespaces setup done ***"
 }
@@ -71,6 +72,7 @@ local_setup(){
     install_if_missing bat brew install bat
     install_if_missing rg brew install ripgrep
     install_if_missing rg brew install neovim
+    install_if_missing rg brew install fzf
     local_install_shellcheck
     log_helpers "*** Local setup done ***"
 }
