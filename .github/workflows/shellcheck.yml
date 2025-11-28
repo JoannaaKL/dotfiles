@@ -1,4 +1,6 @@
 name: Shell Lint
+permissions:
+  contents: read
 
 on:
   push:
