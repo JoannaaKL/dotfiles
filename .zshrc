@@ -21,10 +21,15 @@ plugins=(git
 	 kubectl
          docker
 	 gh
+	 fzf
 	)
 
 source $ZSH/oh-my-zsh.sh
-
+# https://medium.com/@GroundControl/better-git-diffs-with-fzf-89083739a9cb
+fd() {
+  preview="git diff $@ --color=always -- {-1}"
+  git diff $@ --name-only | fzf -m --ansi --preview $preview
+}
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
 #   export EDITOR='vim'
