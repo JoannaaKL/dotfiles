@@ -71,8 +71,8 @@ local_setup(){
     install_if_missing tmux brew install tmux
     install_if_missing bat brew install bat
     install_if_missing rg brew install ripgrep
-    install_if_missing rg brew install neovim
-    install_if_missing rg brew install fzf
+    install_if_missing nvim brew install neovim
+    install_if_missing fzf brew install fzf
     local_install_shellcheck
     log_helpers "*** Local setup done ***"
 }

@@ -1,19 +1,17 @@
-# If you come from bash you might have to change your $PATH.
+# ---------- PATH ----------
+export GOPATH="$HOME/go"
+export PATH="$HOME/.local/bin:$HOME/bin:$GOPATH/bin:/usr/local/opt/mysql-client/bin:/usr/local/bin:$PATH"
 
-export PATH=$HOME/bin:/usr/local/bin:$PATH
-export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin
+# ---------- Go ----------
 export GOPROXY=https://goproxy.githubapp.com/mod,https://proxy.golang.org/,direct
 export GOPRIVATE=
 export GONOPROXY=
 export GONOSUMDB='github.com/github/*'
-# Path to your oh-my-zsh installation.
+
+# ---------- Oh My Zsh ----------
 export ZSH="$HOME/.oh-my-zsh"
-export PATH="/usr/local/bin:$PATH"
 
 ZSH_THEME="spaceship"
-# ssh-add ~/.ssh/id_rsa
-
 ENABLE_CORRECTION="true"
 
 plugins=(git
@@ -25,25 +23,15 @@ plugins=(git
 	)
 
 source $ZSH/oh-my-zsh.sh
-# https://medium.com/@GroundControl/better-git-diffs-with-fzf-89083739a9cb
+
+# ---------- Functions ----------
+# Interactive git diff browser (https://medium.com/@GroundControl/better-git-diffs-with-fzf-89083739a9cb)
 fd() {
   preview="git diff $@ --color=always -- {-1}"
   git diff $@ --name-only | fzf -m --ansi --preview $preview
 }
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
 
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
+# ---------- Aliases ----------
 alias g="git"
 alias cl="clear"
 alias ccreate="gh codespace create"
@@ -51,11 +39,20 @@ alias cdelete="gh codespace delete"
 alias clist="gh codespace list"
 alias copen="gh codespace code"
 alias cssh="gh codespace ssh --config"
-export PATH="/usr/local/opt/mysql-client/bin:$PATH"
+alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+
 export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 export EDITOR=nvim
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-echo "machine goproxy.githubapp.com login nobody password $GITHUB_TOKEN" >> $HOME/.netrc
 export GPG_TTY=$(tty)
-export GOPATH="$HOME/go"
-export PATH="$PATH:$GOPATH/bin"
+export JETBRAINS_LICENSE_SERVER=https://github.jetbrains-ide-services.com
+# Set SAVE_RESULTS_DIR in a local, gitignored file (e.g. ~/.zshrc.local)
+
+# ---------- Goproxy netrc (idempotent) ----------
+if [[ -n "${GITHUB_TOKEN:-}" ]] && ! grep -q "goproxy.githubapp.com" "$HOME/.netrc" 2>/dev/null; then
+  echo "machine goproxy.githubapp.com login nobody password $GITHUB_TOKEN" >> "$HOME/.netrc"
+fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# ---------- Local overrides (not tracked in git) ----------
+[ -f ~/.zshrc.local ] && source ~/.zshrc.local

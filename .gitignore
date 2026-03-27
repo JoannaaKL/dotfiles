@@ -3,3 +3,7 @@
 .gitconfig
 codespace_config
 nvim.appimage
+*mcp*.json
+url
+curl-format.txt
+.zshrc.local
