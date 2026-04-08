@@ -85,12 +85,25 @@ preflight(){
   log "Preflight OK"
 }
 
+install_sparse_checkout(){
+  section "Installing sparse-checkout helper"
+  mkdir -p "$HOME/bin"
+  local target="$HOME/bin/sparse-checkout.sh"
+  local source_path="$SCRIPT_DIR/sparse-checkout.sh"
+  if [[ -L "$target" && "$(readlink "$target")" == "$source_path" ]]; then
+    log "sparse-checkout.sh already linked"; return 0; fi
+  ln -sfn "$source_path" "$target"
+  chmod +x "$source_path"
+  log "Linked sparse-checkout.sh → ~/bin"
+}
+
 main(){
   preflight
   setup             # environment-specific base install (helpers.sh)
   symlink_dotfiles
   install_fonts
   install_spaceship
+  install_sparse_checkout
   export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
   export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
   section "Bootstrap complete"

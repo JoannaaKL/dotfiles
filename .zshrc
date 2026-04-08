@@ -41,6 +41,16 @@ alias copen="gh codespace code"
 alias cssh="gh codespace ssh --config"
 alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
 
+# ── Sparse checkout ──
+alias sclone="sparse-checkout.sh clone"
+alias sconvert="sparse-checkout.sh convert"
+alias sbulk="sparse-checkout.sh bulk-convert"
+alias slist="sparse-checkout.sh list"
+alias sadd="sparse-checkout.sh add"
+alias sremove="sparse-checkout.sh remove"
+alias spull="sparse-checkout.sh pull"
+alias sbpull="sparse-checkout.sh bulk-pull"
+
 export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
 export EDITOR=nvim
 export GPG_TTY=$(tty)
