@@ -43,22 +43,23 @@ install_fonts(){
   local dest="$HOME/.local/share/fonts"
   mkdir -p "$dest"
   # Detect existing Meslo Nerd Font via glob
-  (
+  if (
     shopt -s nullglob nocaseglob 2>/dev/null || true
     local meslo_candidates=("$dest"/*Meslo*"Nerd Font"*.ttf)
     if (( ${#meslo_candidates[@]} > 0 )); then
       log "Meslo Nerd Font already present"
       exit 0
     fi
-  )
-  if [[ $? -eq 0 ]]; then
+  ); then
     return 0
   fi
   local tmp_zip
   tmp_zip="$(mktemp)"
   if curl -fsSL -o "$tmp_zip" https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.zip; then
     unzip -oq "$tmp_zip" -d "$dest"
-    command -v fc-cache >/dev/null && fc-cache -f >/dev/null 2>&1 || true
+    if command -v fc-cache >/dev/null 2>&1; then
+      fc-cache -f >/dev/null 2>&1 || true
+    fi
     log "Fonts installed"
   else
     warn "Font download failed; skipping"
