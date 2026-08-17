@@ -97,6 +97,24 @@ install_sparse_checkout(){
   log "Linked sparse-checkout.sh → ~/bin"
 }
 
+link_into(){
+  local source_path="$1" target_path="$2"
+  [[ -e "$source_path" ]] || { warn "Skipping missing $source_path"; return 0; }
+  if [[ -L "$target_path" && "$(readlink "$target_path")" == "$source_path" ]]; then
+    log "$(basename "$target_path") already linked"; return 0; fi
+  mkdir -p "$(dirname "$target_path")"
+  ln -sfn "$source_path" "$target_path"
+  log "Linked $target_path → $source_path"
+}
+
+install_pr_review_loop(){
+  section "Installing pr-review-loop command and Copilot skill"
+  chmod +x "$SCRIPT_DIR/.local/bin/pr-review-loop"
+  link_into "$SCRIPT_DIR/.local/bin/pr-review-loop" "$HOME/.local/bin/pr-review-loop"
+  link_into "$SCRIPT_DIR/.copilot/skills/pr-review-loop/SKILL.md" \
+            "$HOME/.copilot/skills/pr-review-loop/SKILL.md"
+}
+
 main(){
   preflight
   setup             # environment-specific base install (helpers.sh)
@@ -104,6 +122,7 @@ main(){
   install_fonts
   install_spaceship
   install_sparse_checkout
+  install_pr_review_loop
   export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
   export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
   section "Bootstrap complete"

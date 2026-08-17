@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+#
+# pr-review-loop.sh — Agentic PR review/fix loop driven by GitHub Copilot CLI.
+#
+# One reviewer agent assesses the diff and writes a machine-readable verdict.
+# If the verdict is FAIL, a fixer agent addresses every finding and commits.
+# The loop repeats — fresh reviewer each round — until the reviewer returns
+# PASS or MAX_ITERS is reached.
+#
+# Every cycle picks TWO DISTINCT models at random from a pool: one reviews,
+# the other fixes. Fresh, differing perspectives each round.
+#
+# Usage:
+#   scripts/pr-review-loop.sh <pr-url> [max-iters]
+#
+# Examples:
+#   scripts/pr-review-loop.sh https://github.com/github/copilot-connectors/pull/42
+#   scripts/pr-review-loop.sh https://github.com/github/copilot-connectors/pull/42 8
+#
+# Requires: copilot CLI (authenticated), gh (authenticated), git, jq.
+# Clones the PR's repo to a temp workdir and checks out the PR branch.
+
+set -euo pipefail
+
+PR_URL="${1:?usage: pr-review-loop.sh <pr-url> [max-iters]}"
+MAX_ITERS="${2:-6}"
+
+# Model pool for fuzzy selection. Each cycle draws two DISTINCT models — one
+# reviewer, one fixer — so the critic never shares the implementer's reasoning.
+# Override the whole pool via COPILOT_MODEL_POOL="m1 m2 m3".
+if [[ -n "${COPILOT_MODEL_POOL:-}" ]]; then
+  read -r -a MODEL_POOL <<< "$COPILOT_MODEL_POOL"
+else
+  MODEL_POOL=(
+    gpt-5.6-sol
+    claude-opus-4.8
+    claude-sonnet-4.6
+    gemini-3.1-pro-preview
+    grok-4.6
+  )
+fi
+if (( ${#MODEL_POOL[@]} < 2 )); then
+  echo "ERROR: model pool needs at least 2 models (have ${#MODEL_POOL[@]})" >&2
+  exit 1
+fi
+
+command -v gh   >/dev/null || { echo "ERROR: gh CLI not found" >&2; exit 1; }
+command -v jq   >/dev/null || { echo "ERROR: jq not found" >&2; exit 1; }
+command -v copilot >/dev/null || { echo "ERROR: copilot CLI not found" >&2; exit 1; }
+
+# Resolve the PR: its repo, base branch, and head branch.
+PR_META="$(gh pr view "$PR_URL" --json baseRefName,headRefName,url,number,headRepository,headRepositoryOwner 2>/dev/null)" \
+  || { echo "ERROR: could not resolve PR $PR_URL via gh (auth? access?)" >&2; exit 1; }
+BASE_BRANCH="$(jq -r '.baseRefName' <<< "$PR_META")"
+PR_NUMBER="$(jq -r '.number' <<< "$PR_META")"
+# Owner/repo come from the URL: https://github.com/<owner>/<repo>/pull/<n>
+REPO_SLUG="$(sed -E 's#https?://[^/]+/([^/]+/[^/]+)/pull/.*#\1#' <<< "$PR_URL")"
+
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pr-review-loop.XXXXXX")"
+STATE_DIR="$WORK_DIR/.pr-review-loop"
+VERDICT_FILE="$STATE_DIR/review.json"
+
+log() { printf '\n\033[1;36m[loop]\033[0m %s\n' "$*"; }
+
+log "Cloning $REPO_SLUG and checking out PR #$PR_NUMBER (base: $BASE_BRANCH)"
+gh repo clone "$REPO_SLUG" "$WORK_DIR" -- -q \
+  || { echo "ERROR: clone failed for $REPO_SLUG" >&2; exit 1; }
+cd "$WORK_DIR"
+gh pr checkout "$PR_NUMBER" \
+  || { echo "ERROR: gh pr checkout $PR_NUMBER failed" >&2; exit 1; }
+mkdir -p "$STATE_DIR"
+
+BASE_REF="origin/$BASE_BRANCH"
+
+# Draw two distinct models at random: prints "<reviewer> <fixer>".
+pick_two_models() {
+  local shuffled
+  shuffled=$(printf '%s\n' "${MODEL_POOL[@]}" | sort -R)
+  printf '%s\n' "$shuffled" | head -2 | tr '\n' ' '
+}
+
+# Shared copilot invocation: non-interactive, autonomous, no confirmation prompts.
+# $1 = model, $2 = prompt
+run_copilot() {
+  local model="$1" prompt="$2"
+  copilot -p "$prompt" \
+    --model "$model" \
+    --allow-all-tools \
+    --no-ask-user \
+    -s \
+    -C "$WORK_DIR"
+}
+
+# Shared coding standards both agents must uphold — the reviewer flags
+# violations, the fixer conforms to them.
+CODING_STANDARDS=$(cat <<'EOF'
+Coding standards this code must follow:
+- DRY (Do not Repeat Yourself): no duplicated logic; extract shared behavior.
+- DAMP (Descriptive And Meaningful Phrases): names read like plain language.
+- No multiline/block comments. Code must be self-documenting: it reads like a
+  book, logic flows through well-named functions chained together. The intent
+  comes from the names, not from prose explaining the code.
+- In Go, public (exported) functions appear above private (unexported) ones.
+- Tests cover every path: the success path AND failure paths — missing input,
+  broken network, malformed/wrong input, boundary conditions, error returns.
+- Tests are documentation of system behavior: named and structured so a reader
+  learns how the system behaves from reading them.
+- Follow the MCP (Model Context Protocol) standard where applicable.
+EOF
+)
+
+REVIEWER_PROMPT_TMPL=$(cat <<'EOF'
+You are a rigorous senior code reviewer. Review the changes on the current
+branch against the base ref "%s".
+
+Run: git diff %s...HEAD   to see exactly what changed. Read surrounding code
+as needed to judge correctness — do not review the diff in isolation.
+
+Evaluate for: correctness bugs, security issues, race conditions, error
+handling gaps, missing/incorrect tests, and violations of the repo
+conventions (read AGENTS.md / CLAUDE.md if present). Only report real,
+actionable problems — do not invent nitpicks to justify a FAIL.
+
+Also enforce these coding standards and flag any violation as a finding:
+%s
+
+When done, write a JSON file to EXACTLY this path:
+  %s
+
+The file MUST be valid JSON of this shape:
+  {
+    "verdict": "PASS" | "FAIL",
+    "summary": "one-paragraph overall assessment",
+    "findings": [
+      { "severity": "critical|major|minor", "location": "file:line", "problem": "...", "fix": "..." }
+    ]
+  }
+
+Return PASS only if there are no critical or major findings and the change is
+genuinely ready to merge. If you return PASS, "findings" may be empty.
+Write the file as your final action. Do not commit or modify any source code.
+EOF
+)
+
+FIXER_PROMPT_TMPL=$(cat <<'EOF'
+You are a senior engineer addressing code-review findings on the current branch.
+The reviewer verdict and findings are in this JSON file:
+  %s
+
+Read that file. Address EVERY finding (critical and major first, then minor).
+Make minimal, focused edits — change only what the findings require, no
+drive-by refactors. Add or update tests where the findings call for it.
+Follow the repo conventions in AGENTS.md / CLAUDE.md if present.
+
+Your edits must conform to these coding standards:
+%s
+
+When all findings are addressed, stage and commit your work with a clear
+message summarizing what you fixed (e.g. "review: address round-N findings").
+Do not push. Do not open a PR.
+EOF
+)
+
+for (( i=1; i<=MAX_ITERS; i++ )); do
+  read -r REVIEWER_MODEL FIXER_MODEL <<< "$(pick_two_models)"
+  log "Round $i/$MAX_ITERS — reviewing $BASE_REF...HEAD (reviewer: $REVIEWER_MODEL, fixer: $FIXER_MODEL)"
+  rm -f "$VERDICT_FILE"
+
+  reviewer_prompt=$(printf "$REVIEWER_PROMPT_TMPL" "$BASE_REF" "$BASE_REF" "$CODING_STANDARDS" "$VERDICT_FILE")
+  run_copilot "$REVIEWER_MODEL" "$reviewer_prompt" || { echo "reviewer run failed" >&2; exit 1; }
+
+  if [[ ! -f "$VERDICT_FILE" ]]; then
+    echo "ERROR: reviewer did not produce $VERDICT_FILE" >&2
+    exit 1
+  fi
+  if ! jq empty "$VERDICT_FILE" 2>/dev/null; then
+    echo "ERROR: $VERDICT_FILE is not valid JSON" >&2
+    cat "$VERDICT_FILE" >&2
+    exit 1
+  fi
+
+  verdict=$(jq -r '.verdict // "FAIL"' "$VERDICT_FILE")
+  summary=$(jq -r '.summary // ""' "$VERDICT_FILE")
+  nfind=$(jq '.findings | length' "$VERDICT_FILE")
+  log "Verdict: $verdict — $nfind finding(s)"
+  echo "  $summary"
+
+  if [[ "$verdict" == "PASS" ]]; then
+    log "✅ PR approved by reviewer on round $i. Stopping."
+    exit 0
+  fi
+
+  log "Round $i — fixer addressing $nfind finding(s)"
+  fixer_prompt=$(printf "$FIXER_PROMPT_TMPL" "$VERDICT_FILE" "$CODING_STANDARDS")
+  run_copilot "$FIXER_MODEL" "$fixer_prompt" || { echo "fixer run failed" >&2; exit 1; }
+done
+
+log "⚠️  Reached MAX_ITERS ($MAX_ITERS) without a PASS verdict."
+log "Last verdict file: $VERDICT_FILE"
+exit 2
