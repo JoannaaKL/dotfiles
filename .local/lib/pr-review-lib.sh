@@ -70,6 +70,7 @@ clone_pr() {
   if [[ -d "$WORK_DIR/.git" ]]; then
     log "Reusing existing checkout at $WORK_DIR"
     cd "$WORK_DIR"
+    gh pr checkout "$PR_NUMBER" || { echo "ERROR: gh pr checkout $PR_NUMBER failed" >&2; exit 1; }
     return 0
   fi
   log "Cloning $REPO_SLUG and checking out PR #$PR_NUMBER (base: $BASE_BRANCH)"
