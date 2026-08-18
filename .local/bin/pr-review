@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# pr-review — review a GitHub PR once and write a machine-readable verdict.
+#
+# Clones the PR, runs one reviewer agent, and writes review.json with a
+# PASS/FAIL verdict plus findings. Does not change any code.
+#
+# Usage:
+#   pr-review <pr-url> [-o <verdict-file>] [--model <model>]
+#
+# Examples:
+#   pr-review https://github.com/github/copilot-connectors/pull/42
+#   pr-review https://github.com/github/copilot-connectors/pull/42 -o ~/review.json
+#
+# On PASS exits 0, on FAIL exits 3. Setup errors exit 1.
+
+set -euo pipefail
+
+# Locate and source the shared library (works symlinked or in-repo).
+_src="${BASH_SOURCE[0]}"
+while [ -h "$_src" ]; do
+  _dir="$(cd -P "$(dirname "$_src")" && pwd)"; _src="$(readlink "$_src")"
+  [[ "$_src" != /* ]] && _src="$_dir/$_src"
+done
+BIN_DIR="$(cd -P "$(dirname "$_src")" && pwd)"
+# shellcheck source=/dev/null
+source "$BIN_DIR/../lib/pr-review-lib.sh"
+
+PR_URL="${1:?usage: pr-review <pr-url> [-o <verdict-file>] [--model <model>]}"
+shift || true
+
+VERDICT_OUT=""
+MODEL=""
+while (( $# )); do
+  case "$1" in
+    -o|--out)   VERDICT_OUT="${2:?-o needs a path}"; shift 2 ;;
+    --model)    MODEL="${2:?--model needs a value}"; shift 2 ;;
+    *) echo "ERROR: unexpected argument: $1" >&2; exit 1 ;;
+  esac
+done
+
+require_tools
+require_model_pool
+
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pr-review.XXXXXX")"
+clone_pr "$PR_URL" "$WORK_DIR"
+
+STATE_DIR="$WORK_DIR/.pr-review"
+mkdir -p "$STATE_DIR"
+VERDICT_FILE="${VERDICT_OUT:-$STATE_DIR/review.json}"
+
+: "${MODEL:=$(pick_one_model)}"
+log "Reviewing $BASE_REF...HEAD (model: $MODEL)"
+review_pr "$MODEL" "$BASE_REF" "$VERDICT_FILE"
+print_verdict "$VERDICT_FILE"
+
+log "Verdict file: $VERDICT_FILE"
+[[ "$VERDICT" == "PASS" ]] && exit 0 || exit 3

@@ -109,11 +109,23 @@ link_into(){
 }
 
 install_pr_review_loop(){
-  section "Installing pr-review-loop command and Copilot skill"
-  chmod +x "$SCRIPT_DIR/.local/bin/pr-review-loop"
-  link_into "$SCRIPT_DIR/.local/bin/pr-review-loop" "$HOME/.local/bin/pr-review-loop"
+  section "Installing PR review agents, shared library, and Copilot skill"
+  link_into "$SCRIPT_DIR/.local/lib/pr-review-lib.sh" "$HOME/.local/lib/pr-review-lib.sh"
+  local cmd
+  for cmd in pr-review pr-address-feedback pr-review-loop; do
+    chmod +x "$SCRIPT_DIR/.local/bin/$cmd"
+    link_into "$SCRIPT_DIR/.local/bin/$cmd" "$HOME/.local/bin/$cmd"
+  done
   link_into "$SCRIPT_DIR/.copilot/skills/pr-review-loop/SKILL.md" \
             "$HOME/.copilot/skills/pr-review-loop/SKILL.md"
+}
+
+install_catchup(){
+  section "Installing catchup command and Copilot skill"
+  chmod +x "$SCRIPT_DIR/.local/bin/catchup"
+  link_into "$SCRIPT_DIR/.local/bin/catchup" "$HOME/.local/bin/catchup"
+  link_into "$SCRIPT_DIR/.copilot/skills/catchup/SKILL.md" \
+            "$HOME/.copilot/skills/catchup/SKILL.md"
 }
 
 main(){
@@ -124,6 +136,7 @@ main(){
   install_spaceship
   install_sparse_checkout
   install_pr_review_loop
+  install_catchup
   export SPACESHIP_CONFIG="$HOME/.spaceship.zsh"
   export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
   section "Bootstrap complete"

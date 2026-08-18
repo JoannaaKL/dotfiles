@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#
+# pr-address-feedback — apply code-review findings to a GitHub PR.
+#
+# Reads a verdict JSON file (as produced by pr-review) and runs one fixer agent
+# that addresses every finding and commits on the PR branch. Does not push.
+#
+# Usage:
+#   pr-address-feedback <pr-url> <verdict-file> [--model <model>]
+#   pr-address-feedback <pr-url> --in <verdict-file> [--model <model>]
+#
+# Examples:
+#   pr-address-feedback https://github.com/github/copilot-connectors/pull/42 ~/review.json
+#
+# Exits 0 when the fixer commits, 1 on setup/verdict errors.
+
+set -euo pipefail
+
+# Locate and source the shared library (works symlinked or in-repo).
+_src="${BASH_SOURCE[0]}"
+while [ -h "$_src" ]; do
+  _dir="$(cd -P "$(dirname "$_src")" && pwd)"; _src="$(readlink "$_src")"
+  [[ "$_src" != /* ]] && _src="$_dir/$_src"
+done
+BIN_DIR="$(cd -P "$(dirname "$_src")" && pwd)"
+# shellcheck source=/dev/null
+source "$BIN_DIR/../lib/pr-review-lib.sh"
+
+PR_URL="${1:?usage: pr-address-feedback <pr-url> <verdict-file> [--model <model>]}"
+shift || true
+
+VERDICT_IN=""
+MODEL=""
+while (( $# )); do
+  case "$1" in
+    --in)     VERDICT_IN="${2:?--in needs a path}"; shift 2 ;;
+    --model)  MODEL="${2:?--model needs a value}"; shift 2 ;;
+    *) if [[ -z "$VERDICT_IN" && -f "$1" ]]; then VERDICT_IN="$1"; shift
+       else echo "ERROR: unexpected argument: $1" >&2; exit 1; fi ;;
+  esac
+done
+
+[[ -n "$VERDICT_IN" ]] || { echo "ERROR: no verdict file given" >&2; exit 1; }
+[[ -f "$VERDICT_IN" ]] || { echo "ERROR: verdict file not found: $VERDICT_IN" >&2; exit 1; }
+
+require_tools
+require_model_pool
+
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pr-address.XXXXXX")"
+clone_pr "$PR_URL" "$WORK_DIR"
+
+# Copy the verdict into the workdir so the fixer reads a stable local path.
+STATE_DIR="$WORK_DIR/.pr-review"
+mkdir -p "$STATE_DIR"
+VERDICT_FILE="$STATE_DIR/review.json"
+cp "$VERDICT_IN" "$VERDICT_FILE"
+
+: "${MODEL:=$(pick_one_model)}"
+nfind=$(jq '.findings | length' "$VERDICT_FILE")
+log "Addressing $nfind finding(s) on PR #$PR_NUMBER (model: $MODEL)"
+address_feedback "$MODEL" "$VERDICT_FILE"
+
+log "Fixer done. Commits are on the PR branch in: $WORK_DIR"

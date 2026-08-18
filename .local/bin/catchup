@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+#
+# catchup — "what did I miss" digest across Slack and GitHub.
+#
+# Give it a subject and a lookback window. Three agents run in sequence:
+#   1. Scout      searches Slack and GitHub for recent activity on the subject
+#                 and lists any topics that look new.
+#   2. Researcher looks up those new topics and writes short summaries + links.
+#   3. Writer     merges everything into a plain-language report you can read.
+#
+# The report avoids AI-sounding prose: short sentences, no em dashes, no filler.
+#
+# Usage:
+#   catchup "<subject>" [days] [-o <report-path>]
+#
+# Examples:
+#   catchup "copilot-connectors"
+#   catchup "copilot-connectors" 10
+#   catchup "OAuth broker work" 14 -o ~/catchup-oauth.md
+#
+# Requires: copilot CLI (authenticated), with the Slack MCP server configured
+# and GitHub access available. Also needs jq.
+
+set -euo pipefail
+
+SUBJECT="${1:?usage: catchup \"<subject>\" [days] [-o <report-path>]}"
+shift || true
+
+DAYS=5
+REPORT_PATH=""
+while (( $# )); do
+  case "$1" in
+    -o|--out) REPORT_PATH="${2:?-o needs a path}"; shift 2 ;;
+    *) if [[ "$1" =~ ^[0-9]+$ ]]; then DAYS="$1"; shift
+       else echo "ERROR: unexpected argument: $1" >&2; exit 1; fi ;;
+  esac
+done
+
+command -v copilot >/dev/null || { echo "ERROR: copilot CLI not found" >&2; exit 1; }
+command -v jq      >/dev/null || { echo "ERROR: jq not found" >&2; exit 1; }
+
+# Date cutoff, portable across macOS (BSD date) and Linux (GNU date).
+if date -v-1d >/dev/null 2>&1; then
+  SINCE="$(date -v-"${DAYS}"d +%Y-%m-%d)"
+else
+  SINCE="$(date -d "${DAYS} days ago" +%Y-%m-%d)"
+fi
+TODAY="$(date +%Y-%m-%d)"
+
+# Model pool for fuzzy selection: each phase draws a random model so the three
+# agents bring different perspectives. Override with CATCHUP_MODEL_POOL="m1 m2".
+if [[ -n "${CATCHUP_MODEL_POOL:-}" ]]; then
+  read -r -a MODEL_POOL <<< "$CATCHUP_MODEL_POOL"
+else
+  MODEL_POOL=(
+    claude-sonnet-4.6
+    gpt-5.6-sol
+    claude-opus-4.8
+    gemini-3.1-pro-preview
+  )
+fi
+pick_model() { printf '%s\n' "${MODEL_POOL[@]}" | sort -R | head -1; }
+
+STATE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/catchup.XXXXXX")"
+FINDINGS="$STATE_DIR/findings.json"
+RESEARCH="$STATE_DIR/research.json"
+: "${REPORT_PATH:=$STATE_DIR/report.md}"
+
+log() { printf '\n\033[1;36m[catchup]\033[0m %s\n' "$*"; }
+
+run_copilot() {
+  local model="$1" prompt="$2"
+  copilot -p "$prompt" \
+    --model "$model" \
+    --allow-all-tools \
+    --no-ask-user \
+    -s
+}
+
+# ---------------------------------------------------------------------------
+# Phase 1 — Scout: search Slack and GitHub, list activity and new topics.
+# ---------------------------------------------------------------------------
+SCOUT_PROMPT=$(cat <<'EOF'
+You are gathering recent activity on a subject so someone returning from time
+off can catch up. Subject: "%s". Only include activity updated on or after %s
+(today is %s). Ignore anything older.
+
+Search two places:
+1. Slack, using the Slack MCP tools. Look for channels, threads, and messages
+   that mention the subject or its obvious variants. Capture the permalink for
+   each relevant thread.
+2. GitHub, using the available GitHub tools or the gh CLI. Look for issues,
+   pull requests, and discussions updated in the window that relate to the
+   subject. Capture the URL and current state for each.
+
+For each relevant item, note who is involved and what actually changed or is
+being decided. Skip bots, automated notifications, and noise.
+
+While reading, collect any topics, standards, systems, or acronyms that a
+returning teammate might not recognize yet (for example an RFC number, a new
+service name, an identity provider). List them separately as research_topics.
+
+Write a JSON file to EXACTLY this path:
+  %s
+
+Shape:
+  {
+    "subject": "...",
+    "since": "%s",
+    "conversations": [
+      {
+        "source": "slack" | "github",
+        "title": "short human title",
+        "url": "permalink or issue/PR url",
+        "updated": "YYYY-MM-DD",
+        "people": ["name", "..."],
+        "whats_happening": "one or two plain sentences on what changed or is being decided"
+      }
+    ],
+    "research_topics": ["topic or acronym", "..."]
+  }
+
+If nothing relevant was found, write conversations as an empty array and
+research_topics as an empty array. Write the file as your final action.
+EOF
+)
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Researcher: explain the new topics with sources.
+# ---------------------------------------------------------------------------
+RESEARCH_PROMPT=$(cat <<'EOF'
+You are explaining unfamiliar topics for someone catching up. Read this file:
+  %s
+
+Take its "research_topics" array. For each topic, find one or two trustworthy
+sources (official docs, the actual RFC, a standards page, a canonical repo).
+Read enough to explain it plainly.
+
+Write a JSON file to EXACTLY this path:
+  %s
+
+Shape:
+  {
+    "topics": [
+      {
+        "topic": "...",
+        "summary": "2 to 4 plain sentences a newcomer can follow",
+        "sources": [ { "title": "...", "url": "..." } ]
+      }
+    ]
+  }
+
+If research_topics is empty, write topics as an empty array. Keep summaries
+concrete and short. Write the file as your final action.
+EOF
+)
+
+# ---------------------------------------------------------------------------
+# Phase 3 — Writer: assemble a readable report with no AI-sounding prose.
+# ---------------------------------------------------------------------------
+WRITER_PROMPT=$(cat <<'EOF'
+You are writing a catch-up report for someone back from time off. Read both:
+  Findings: %s
+  Research: %s
+
+Write a Markdown report to EXACTLY this path:
+  %s
+
+Structure:
+  # Catch-up: <subject>
+  One line stating the date range covered.
+
+  ## What happened
+  Group by Slack and GitHub. For each item give a short line on what changed
+  and a link. Put the most important items first. If nothing was found, say so
+  in one plain sentence.
+
+  ## New topics worth a look
+  For each researched topic: the name, your plain summary, and the source links.
+  Skip this section if there were no new topics.
+
+  ## Where to start
+  A short list of the two or three things to read first, with links.
+
+Writing rules, follow them strictly:
+- Use short, plain sentences. Write like you are talking to a colleague.
+- Use "is" and "are" and "has". Do not dress up simple statements.
+- No em dashes (the long dash). Use commas, periods, or parentheses.
+- No filler or hype words: delve, underscore, tapestry, landscape, pivotal,
+  crucial, robust, seamless, leverage, testament, showcase, foster, vibrant.
+- Do not force things into groups of three.
+- No "not only X but also Y" constructions.
+- Do not open sentences with Interestingly, Importantly, Notably, Ultimately.
+- Keep every link from the source files. Links are the point of this report.
+- Do not invent activity or sources. Only use what is in the two files.
+
+Write the file as your final action. Do not add a closing pep-talk.
+EOF
+)
+
+log "Subject: \"$SUBJECT\"  |  since $SINCE (last $DAYS days)"
+
+SCOUT_MODEL="$(pick_model)"
+log "Phase 1/3 — scouting Slack + GitHub (model: $SCOUT_MODEL)"
+scout_prompt=$(printf "$SCOUT_PROMPT" "$SUBJECT" "$SINCE" "$TODAY" "$FINDINGS" "$SINCE")
+run_copilot "$SCOUT_MODEL" "$scout_prompt" || { echo "scout run failed" >&2; exit 1; }
+[[ -f "$FINDINGS" ]] || { echo "ERROR: scout produced no findings file" >&2; exit 1; }
+jq empty "$FINDINGS" 2>/dev/null || { echo "ERROR: findings.json invalid" >&2; cat "$FINDINGS" >&2; exit 1; }
+
+nconv=$(jq '.conversations | length' "$FINDINGS")
+ntopic=$(jq '.research_topics | length' "$FINDINGS")
+log "Found $nconv conversation(s), $ntopic new topic(s)"
+
+if (( ntopic > 0 )); then
+  RESEARCH_MODEL="$(pick_model)"
+  log "Phase 2/3 — researching $ntopic topic(s) (model: $RESEARCH_MODEL)"
+  research_prompt=$(printf "$RESEARCH_PROMPT" "$FINDINGS" "$RESEARCH")
+  run_copilot "$RESEARCH_MODEL" "$research_prompt" || { echo "research run failed" >&2; exit 1; }
+else
+  log "Phase 2/3 — no new topics, skipping research"
+  echo '{"topics":[]}' > "$RESEARCH"
+fi
+[[ -f "$RESEARCH" ]] || echo '{"topics":[]}' > "$RESEARCH"
+jq empty "$RESEARCH" 2>/dev/null || { echo "ERROR: research.json invalid" >&2; cat "$RESEARCH" >&2; exit 1; }
+
+WRITER_MODEL="$(pick_model)"
+log "Phase 3/3 — writing report (model: $WRITER_MODEL)"
+writer_prompt=$(printf "$WRITER_PROMPT" "$FINDINGS" "$RESEARCH" "$REPORT_PATH")
+run_copilot "$WRITER_MODEL" "$writer_prompt" || { echo "writer run failed" >&2; exit 1; }
+[[ -f "$REPORT_PATH" ]] || { echo "ERROR: writer produced no report" >&2; exit 1; }
+
+log "Report ready: $REPORT_PATH"
+echo
+cat "$REPORT_PATH"
