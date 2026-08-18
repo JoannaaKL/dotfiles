@@ -7,3 +7,5 @@ nvim.appimage
 url
 curl-format.txt
 .zshrc.local
+
+**/.claude/settings.local.json

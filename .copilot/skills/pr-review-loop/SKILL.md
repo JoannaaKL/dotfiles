@@ -22,6 +22,21 @@ workdir, so it works from ANY directory or repository.
 - User asks to "keep reviewing until it passes" or "run the review loop".
 - User wants two different models to alternate reviewer/fixer roles per round.
 
+## Three Commands: Loop or Split
+
+The review and fix agents ship as three commands so they can run together or
+on their own:
+
+- `pr-review <pr-url> [-o <file>] [--model <m>]` — review only. Writes a
+  PASS/FAIL verdict JSON and changes no code. Exits 0 on PASS, 3 on FAIL.
+- `pr-address-feedback <pr-url> <verdict-file> [--model <m>]` — fix only. Reads
+  a verdict file and commits fixes on the PR branch.
+- `pr-review-loop <pr-url> [max-iters]` — runs both in a loop until PASS.
+
+Use the loop when the user wants a hands-off "make it pass" run. Use `pr-review`
+alone when they only want an assessment, and `pr-address-feedback` alone when
+they already have a verdict file and just want the fixes applied.
+
 ## Prerequisites
 
 The command preflights these itself, but confirm they are set up:
