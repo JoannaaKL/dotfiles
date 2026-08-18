@@ -74,7 +74,8 @@ run_copilot() {
     --model "$model" \
     --allow-all-tools \
     --no-ask-user \
-    -s
+    -s \
+    -C "$STATE_DIR"
 }
 
 # ---------------------------------------------------------------------------
