@@ -58,6 +58,7 @@ cp "$VERDICT_IN" "$VERDICT_FILE"
 : "${MODEL:=$(pick_one_model)}"
 nfind=$(jq '.findings | length' "$VERDICT_FILE")
 log "Addressing $nfind finding(s) on PR #$PR_NUMBER (model: $MODEL)"
+before="$(git rev-parse HEAD)"
 address_feedback "$MODEL" "$VERDICT_FILE"
-
+after="$(git rev-parse HEAD)"; [[ "$after" != "$before" ]] || { echo "ERROR: fixer did not create a commit" >&2; exit 1; }
 log "Fixer done. Commits are on the PR branch in: $WORK_DIR"
