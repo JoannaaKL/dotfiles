@@ -38,6 +38,7 @@ log() { printf '\n\033[1;36m[pr-agent]\033[0m %s\n' "$*"; }
 # --- Preconditions ----------------------------------------------------------
 require_tools() {
   command -v gh      >/dev/null || { echo "ERROR: gh CLI not found" >&2; exit 1; }
+  command -v git     >/dev/null || { echo "ERROR: git not found" >&2; exit 1; }
   command -v jq      >/dev/null || { echo "ERROR: jq not found" >&2; exit 1; }
   command -v copilot >/dev/null || { echo "ERROR: copilot CLI not found" >&2; exit 1; }
 }
