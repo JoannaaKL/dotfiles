@@ -209,8 +209,8 @@ print_verdict() {
 }
 
 # --- Library self-location --------------------------------------------------
-# Commands source this via find_lib below. Resolve the real dir of a symlinked
-# script so sibling files (this lib) are found whether installed or run in-repo.
+# Helper to resolve the real dir of a symlinked script so sibling files can be
+# found whether installed or run in-repo.
 resolve_script_dir() {
   local src="$1" dir
   while [ -h "$src" ]; do
