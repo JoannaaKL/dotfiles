@@ -15,8 +15,8 @@
 #   pr-review-loop <pr-url> [max-iters]
 #
 # Examples:
-#   pr-review-loop https://github.com/github/copilot-connectors/pull/42
-#   pr-review-loop https://github.com/github/copilot-connectors/pull/42 8
+#   pr-review-loop https://github.com/github/github-mcp-server/pull/42
+#   pr-review-loop https://github.com/github/github-mcp-server/pull/42 8
 #
 # Exits 0 on PASS, 2 when MAX_ITERS is hit, 1 on setup errors.
 

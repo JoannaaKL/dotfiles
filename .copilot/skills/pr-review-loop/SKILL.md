@@ -58,7 +58,7 @@ pr-review-loop <pr-url> [max-iters]
 Example:
 
 ```bash
-pr-review-loop https://github.com/github/copilot-connectors/pull/42 8
+pr-review-loop https://github.com/github/github-mcp-server/pull/42 8
 ```
 
 It clones the PR's repo into a temp workdir, checks out the PR branch, derives

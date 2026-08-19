@@ -10,7 +10,7 @@
 #   pr-address-feedback <pr-url> --in <verdict-file> [--model <model>]
 #
 # Examples:
-#   pr-address-feedback https://github.com/github/copilot-connectors/pull/42 ~/review.json
+#   pr-address-feedback https://github.com/github/github-mcp-server/pull/42 ~/review.json
 #
 # Exits 0 when the fixer commits, 1 on setup/verdict errors.
 

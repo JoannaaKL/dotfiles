@@ -69,13 +69,13 @@ pr-review-loop <pr-url> [max-iters]
 Review a PR and keep the verdict:
 
 ```bash
-pr-review https://github.com/github/copilot-connectors/pull/42 -o ~/review.json
+pr-review https://github.com/github/github-mcp-server/pull/42 -o ~/review.json
 ```
 
 Read the verdict yourself, decide what you want, then apply the fixes when ready:
 
 ```bash
-pr-address-feedback https://github.com/github/copilot-connectors/pull/42 ~/review.json
+pr-address-feedback https://github.com/github/github-mcp-server/pull/42 ~/review.json
 ```
 
 This split is useful when you want a human in the middle. You read the findings,
@@ -87,7 +87,7 @@ fixer on only what is left.
 Hands-off, make it pass:
 
 ```bash
-pr-review-loop https://github.com/github/copilot-connectors/pull/42 8
+pr-review-loop https://github.com/github/github-mcp-server/pull/42 8
 ```
 
 The loop does the same review and fix steps, just chained and repeated, until

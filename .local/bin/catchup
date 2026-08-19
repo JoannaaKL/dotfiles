@@ -14,9 +14,9 @@
 #   catchup "<subject>" [days] [-o <report-path>]
 #
 # Examples:
-#   catchup "copilot-connectors"
-#   catchup "copilot-connectors" 10
-#   catchup "OAuth broker work" 14 -o ~/catchup-oauth.md
+#   catchup "github-mcp-server"
+#   catchup "github-mcp-server" 10
+#   catchup "MCP tool annotations" 14 -o ~/catchup-mcp.md
 #
 # Requires: copilot CLI (authenticated), with the Slack MCP server configured
 # and GitHub access available. Also needs jq.

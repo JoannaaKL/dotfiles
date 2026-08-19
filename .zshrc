@@ -3,10 +3,9 @@ export GOPATH="$HOME/go"
 export PATH="$HOME/.local/bin:$HOME/bin:$GOPATH/bin:/usr/local/opt/mysql-client/bin:/usr/local/bin:$PATH"
 
 # ---------- Go ----------
-export GOPROXY=https://goproxy.githubapp.com/mod,https://proxy.golang.org/,direct
+# GOPROXY/GONOSUMDB and any private module proxy live in ~/.zshrc.local (untracked).
 export GOPRIVATE=
 export GONOPROXY=
-export GONOSUMDB='github.com/github/*'
 
 # ---------- Oh My Zsh ----------
 export ZSH="$HOME/.oh-my-zsh"
@@ -57,12 +56,13 @@ export GPG_TTY=$(tty)
 export JETBRAINS_LICENSE_SERVER=https://github.jetbrains-ide-services.com
 # Set SAVE_RESULTS_DIR in a local, gitignored file (e.g. ~/.zshrc.local)
 
-# ---------- Goproxy netrc (idempotent) ----------
-if [[ -n "${GITHUB_TOKEN:-}" ]] && ! grep -q "goproxy.githubapp.com" "$HOME/.netrc" 2>/dev/null; then
-  echo "machine goproxy.githubapp.com login nobody password $GITHUB_TOKEN" >> "$HOME/.netrc"
-fi
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # ---------- Local overrides (not tracked in git) ----------
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
+
+# BEGIN Agency MANAGED BLOCK
+if [[ ":${PATH}:" != *":/Users/joannaakl/.config/agency/CurrentVersion:"* ]]; then
+    export PATH="/Users/joannaakl/.config/agency/CurrentVersion:${PATH}"
+fi
+# END Agency MANAGED BLOCK

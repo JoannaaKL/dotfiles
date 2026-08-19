@@ -40,17 +40,23 @@ local_install_shellcheck(){
     fi
 }
 
+# Host comes from GOPROXY_NETRC_HOST (set in ~/.zshrc.local); no-op when unset.
 ensure_goproxy_netrc(){
+  local proxy_host="${GOPROXY_NETRC_HOST:-}"
+  if [[ -z "$proxy_host" ]]; then
+    log_helpers "GOPROXY_NETRC_HOST not set; skipping goproxy netrc entry"
+    return 0
+  fi
   if [[ -z "${GITHUB_TOKEN:-}" ]]; then
     log_helpers "GITHUB_TOKEN not set; skipping goproxy netrc entry"
     return 0
   fi
   local netrc_path="${HOME}/.netrc"
-  if [[ -f "$netrc_path" ]] && grep -q "goproxy.githubapp.com" "$netrc_path"; then
-    log_helpers "goproxy.netrc entry detected; skipping update"
+  if [[ -f "$netrc_path" ]] && grep -q "$proxy_host" "$netrc_path"; then
+    log_helpers "goproxy netrc entry detected; skipping update"
     return 0
   fi
-  echo "machine goproxy.githubapp.com login nobody password ${GITHUB_TOKEN}" >> "$netrc_path"
+  echo "machine $proxy_host login nobody password ${GITHUB_TOKEN}" >> "$netrc_path"
   log_helpers "goproxy netrc entry configured"
 }
 

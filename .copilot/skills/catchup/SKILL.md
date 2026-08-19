@@ -44,9 +44,9 @@ catchup "<subject>" [days] [-o <report-path>]
 Examples:
 
 ```bash
-catchup "copilot-connectors"
-catchup "copilot-connectors" 10
-catchup "OAuth broker work" 14 -o ~/catchup-oauth.md
+catchup "github-mcp-server"
+catchup "github-mcp-server" 10
+catchup "MCP tool annotations" 14 -o ~/catchup-mcp.md
 ```
 
 ## Model Selection
@@ -55,7 +55,7 @@ Each phase picks a model at random from a small pool so the three agents bring
 different perspectives. Override the pool with an environment variable:
 
 ```bash
-CATCHUP_MODEL_POOL="gpt-5.6-sol claude-opus-4.8" catchup "copilot-connectors" 7
+CATCHUP_MODEL_POOL="gpt-5.6-sol claude-opus-4.8" catchup "github-mcp-server" 7
 ```
 
 ## Steps
