@@ -95,8 +95,21 @@ the reviewer returns PASS.
 
 ## Model pool
 
-All three share a model pool. Override it for a single run with an environment
-variable:
+All three share a pool containing every concrete model currently returned by
+the subscription-aware Copilot CLI model catalog:
+
+```text
+claude-sonnet-5 claude-opus-5 claude-opus-4.8 claude-opus-4.7
+claude-sonnet-4.6 claude-sonnet-4.5 claude-haiku-4.5
+gpt-5.6-sol gpt-5.6-terra gpt-5.6-luna gpt-5.5 gpt-5.4 gpt-5.4-mini
+gpt-5.3-codex gpt-5-mini
+mai-code-1.1-flash mai-code-1-flash-picker
+grok-4.5 grok-4.6 kimi-k3 kimi-k2.7-code
+```
+
+`auto` is intentionally excluded because it does not identify a concrete model,
+so it cannot preserve the loop's distinct reviewer/fixer guarantee. Override
+the pool for a single run with an environment variable:
 
 ```bash
 COPILOT_MODEL_POOL="gpt-5.6-sol claude-opus-4.8 grok-4.6" pr-review-loop <pr-url>

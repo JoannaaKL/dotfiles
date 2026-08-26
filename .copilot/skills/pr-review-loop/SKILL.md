@@ -68,8 +68,15 @@ the base ref automatically, and runs the loop there. Commits land on the checked
 ## Model Selection
 
 Each cycle draws two DISTINCT models at random from a pool so the critic never
-shares the implementer's reasoning. Override the pool with an environment
-variable before invoking:
+shares the implementer's reasoning.
+```text
+claude-sonnet-5 claude-opus-5 claude-opus-4.8 claude-opus-4.7
+claude-sonnet-4.6 claude-sonnet-4.5 claude-haiku-4.5
+gpt-5.6-sol gpt-5.6-terra gpt-5.6-luna gpt-5.5 gpt-5.4 gpt-5.4-mini
+gpt-5.3-codex gpt-5-mini
+mai-code-1.1-flash mai-code-1-flash-picker
+grok-4.5 grok-4.6 kimi-k3 kimi-k2.7-code
+```
 
 ```bash
 COPILOT_MODEL_POOL="gpt-5.6-sol claude-opus-4.8 grok-4.6" pr-review-loop <pr-url>

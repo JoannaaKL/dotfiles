@@ -14,10 +14,26 @@ if [[ -n "${COPILOT_MODEL_POOL:-}" ]]; then
   read -r -a MODEL_POOL <<< "$COPILOT_MODEL_POOL"
 else
   MODEL_POOL=(
-    gpt-5.6-sol
+    claude-sonnet-5
+    claude-opus-5
     claude-opus-4.8
+    claude-opus-4.7
     claude-sonnet-4.6
-    gemini-3.1-pro-preview
+    claude-sonnet-4.5
+    claude-haiku-4.5
+    gpt-5.6-sol
+    gpt-5.6-terra
+    gpt-5.6-luna
+    gpt-5.5
+    gpt-5.4
+    gpt-5.4-mini
+    gpt-5.3-codex
+    gpt-5-mini
+    mai-code-1.1-flash
+    mai-code-1-flash-picker
+    grok-4.5
+    kimi-k3
+    kimi-k2.7-code
     grok-4.6
   )
 fi
