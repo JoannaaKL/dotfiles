@@ -42,7 +42,14 @@ done
 require_tools
 require_model_pool
 
+if [[ -n "$VERDICT_OUT" && "$VERDICT_OUT" != /* ]]; then
+  VERDICT_OUT="$(pwd)/$VERDICT_OUT"
+fi
+
 WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pr-review.XXXXXX")"
+if [[ -n "$VERDICT_OUT" ]]; then
+  trap 'rm -rf -- "$WORK_DIR"' EXIT
+fi
 clone_pr "$PR_URL" "$WORK_DIR"
 
 STATE_DIR="$WORK_DIR/.pr-review"

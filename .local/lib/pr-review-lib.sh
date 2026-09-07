@@ -72,6 +72,7 @@ resolve_pr() {
   BASE_BRANCH="$(jq -r '.baseRefName' <<< "$pr_meta")"
   PR_NUMBER="$(jq -r '.number' <<< "$pr_meta")"
   REPO_SLUG="$(sed -E 's#https?://[^/]+/([^/]+/[^/]+)/pull/.*#\1#' <<< "$pr_url")"
+  # shellcheck disable=SC2034  # Used by scripts that source this library.
   BASE_REF="origin/$BASE_BRANCH"
 }
 
@@ -83,14 +84,14 @@ clone_pr() {
   WORK_DIR="$workdir"
   if [[ -d "$WORK_DIR/.git" ]]; then
     log "Reusing existing checkout at $WORK_DIR"
-    cd "$WORK_DIR"
+    cd "$WORK_DIR" || return 1
     gh pr checkout "$PR_NUMBER" || { echo "ERROR: gh pr checkout $PR_NUMBER failed" >&2; exit 1; }
     return 0
   fi
   log "Cloning $REPO_SLUG and checking out PR #$PR_NUMBER (base: $BASE_BRANCH)"
-  gh repo clone "$REPO_SLUG" "$WORK_DIR" -- -q \
+  gh repo clone "$REPO_SLUG" "$WORK_DIR" -- --filter=blob:none -q \
     || { echo "ERROR: clone failed for $REPO_SLUG" >&2; exit 1; }
-  cd "$WORK_DIR"
+  cd "$WORK_DIR" || return 1
   gh pr checkout "$PR_NUMBER" \
     || { echo "ERROR: gh pr checkout $PR_NUMBER failed" >&2; exit 1; }
 }
@@ -200,6 +201,7 @@ EOF
 review_pr() {
   local model="$1" base_ref="$2" verdict_file="$3" prompt
   rm -f "$verdict_file"
+  # shellcheck disable=SC2059  # The constant template intentionally owns placeholders.
   prompt=$(printf "$REVIEWER_PROMPT_TMPL" "$base_ref" "$base_ref" "$CODING_STANDARDS" "$verdict_file")
   run_copilot "$model" "$prompt" || { echo "reviewer run failed" >&2; exit 1; }
   validate_verdict "$verdict_file"
@@ -209,6 +211,7 @@ review_pr() {
 address_feedback() {
   local model="$1" verdict_file="$2" prompt
   validate_verdict "$verdict_file"
+  # shellcheck disable=SC2059  # The constant template intentionally owns placeholders.
   prompt=$(printf "$FIXER_PROMPT_TMPL" "$verdict_file" "$CODING_STANDARDS")
   run_copilot "$model" "$prompt" || { echo "fixer run failed" >&2; exit 1; }
 }
@@ -222,17 +225,4 @@ print_verdict() {
   local summary; summary=$(jq -r '.summary // ""' "$file")
   log "Verdict: $VERDICT — $NFIND finding(s)"
   echo "  $summary"
-}
-
-# --- Library self-location --------------------------------------------------
-# Helper to resolve the real dir of a symlinked script so sibling files can be
-# found whether installed or run in-repo.
-resolve_script_dir() {
-  local src="$1" dir
-  while [ -h "$src" ]; do
-    dir="$(cd -P "$(dirname "$src")" && pwd)"
-    src="$(readlink "$src")"
-    [[ "$src" != /* ]] && src="$dir/$src"
-  done
-  cd -P "$(dirname "$src")" && pwd
 }

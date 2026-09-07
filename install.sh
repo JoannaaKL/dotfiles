@@ -56,12 +56,18 @@ install_fonts(){
   local tmp_zip
   tmp_zip="$(mktemp)"
   if curl -fsSL -o "$tmp_zip" https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Meslo.zip; then
-    unzip -oq "$tmp_zip" -d "$dest"
+    if ! unzip -oq "$tmp_zip" -d "$dest"; then
+      rm -f "$tmp_zip"
+      err "Font extraction failed"
+      return 1
+    fi
+    rm -f "$tmp_zip"
     if command -v fc-cache >/dev/null 2>&1; then
       fc-cache -f >/dev/null 2>&1 || true
     fi
     log "Fonts installed"
   else
+    rm -f "$tmp_zip"
     warn "Font download failed; skipping"
   fi
 }
@@ -136,6 +142,7 @@ main(){
   preflight
   setup             # environment-specific base install (helpers.sh)
   symlink_dotfiles
+  install_neovim
   install_fonts
   install_spaceship
   install_sparse_checkout

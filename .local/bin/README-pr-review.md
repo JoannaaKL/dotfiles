@@ -4,9 +4,10 @@ Three commands that review a GitHub pull request and fix review findings, driven
 by the GitHub Copilot CLI. You can run the reviewer on its own, run the fixer on
 its own, or run both in a loop until the PR passes.
 
-All three clone the target PR into their own temp workdir, so you can run them
-from any directory. They never push. Commits land on the checked-out PR branch
-in the temp clone.
+All three use blobless temporary clones, so you can run them from any directory.
+They never push. Workdirs with fixer commits are kept and printed so the commits
+remain available. Review-only workdirs are removed when the verdict is written
+to an explicit output path.
 
 ## The commands
 

@@ -12,12 +12,10 @@ Opinionated workstation + Codespaces bootstrap.
   - Spaceship ZSH theme setup
   - Meslo Nerd Font install (skips if present)
   - Safe dotfile symlinking (backs up existing files)
-  - Optional GitHub Copilot CLI extension
-  - Delta (syntax highlighted pager) install
 - Managed Codespaces SSH config export (`export_codespace_cfg`)
 - Codespace cleanup utility (`clean-codespaces.sh --dry-run`)
 - Custom multi-model PR review/fix loop with the `multi-model-pr-loop` Copilot skill
-- Shell linting via GitHub Actions + local `make lint`.
+- Shell linting and tracked GitHub token checks via GitHub Actions + local `make lint`.
 
 ## Libraries and Packages
 
@@ -36,7 +34,6 @@ Opinionated workstation + Codespaces bootstrap.
 
 - [bat](https://github.com/sharkdp/bat) - A cat clone with syntax highlighting
 - [ripgrep](https://github.com/BurntSushi/ripgrep) - Fast line-oriented search tool
-- [git-delta](https://github.com/dandavison/delta) - Syntax-highlighting pager for git
 - [GitHub CLI](https://cli.github.com/) - GitHub's official command-line tool
 - [GitHub Copilot CLI](https://github.com/github/copilot-cli) - Standalone coding agent used by the PR review commands
 
@@ -129,9 +126,10 @@ Install the standalone `copilot` CLI separately and authenticate with
 `copilot login` and `gh auth login`. Node.js, `git`, and `jq` must also be on PATH.
 The old `gh copilot` extension is not a substitute for the standalone CLI.
 
-The loop clones the PR into a temporary checkout and stops at PASS or the
-iteration cap, which defaults to 6. Fixes are committed in that checkout but
-are not pushed, and no GitHub review is posted.
+The loop uses a blobless temporary checkout and stops at PASS or the iteration
+cap, which defaults to 6. Checkouts with fixes are kept because the commits are
+not pushed. Review-only checkouts can be removed automatically by passing an
+explicit output path to `pr-review`. No GitHub review is posted.
 
 As of 2026-09-07, the default pool contains 19 public model IDs from the
 authenticated Copilot CLI catalog, including GPT-6 Astra. `auto` and
@@ -142,7 +140,7 @@ See the [PR review commands guide](.local/bin/README-pr-review.md) for the full
 model pool, custom model overrides, review-only and fix-only commands, and exit
 codes.
 
-## Linting Shell Scripts
+## Repository Checks
 
 Run locally:
 
@@ -150,7 +148,8 @@ Run locally:
 make lint
 ```
 
-The CI workflow runs automatically on pushes and pull requests touching any `*.sh` files.
+The CI workflow runs on every push and pull request. It checks every tracked
+Bash script and rejects recognized GitHub token formats in tracked files.
 
 ## Codespaces SSH Config Export
 

@@ -43,6 +43,8 @@ if (( ${#MODEL_POOL[@]} < 2 )); then
 fi
 
 WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/pr-review-loop.XXXXXX")"
+KEEP_WORK_DIR=false
+trap 'if [[ "$KEEP_WORK_DIR" != true ]]; then rm -rf -- "$WORK_DIR"; fi' EXIT
 clone_pr "$PR_URL" "$WORK_DIR"
 
 STATE_DIR="$WORK_DIR/.pr-review"
@@ -62,6 +64,7 @@ for (( i=1; i<=MAX_ITERS; i++ )); do
   fi
 
   log "Round $i — fixer addressing $NFIND finding(s)"
+  KEEP_WORK_DIR=true
   address_feedback "$FIXER_MODEL" "$VERDICT_FILE"
 done
 

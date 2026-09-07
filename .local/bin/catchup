@@ -203,6 +203,7 @@ log "Subject: \"$SUBJECT\"  |  since $SINCE (last $DAYS days)"
 
 SCOUT_MODEL="$(pick_model)"
 log "Phase 1/3 — scouting Slack + GitHub (model: $SCOUT_MODEL)"
+# shellcheck disable=SC2059  # The constant template intentionally owns placeholders.
 scout_prompt=$(printf "$SCOUT_PROMPT" "$SUBJECT" "$SINCE" "$TODAY" "$FINDINGS" "$SINCE")
 run_copilot "$SCOUT_MODEL" "$scout_prompt" || { echo "scout run failed" >&2; exit 1; }
 [[ -f "$FINDINGS" ]] || { echo "ERROR: scout produced no findings file" >&2; exit 1; }
@@ -215,6 +216,7 @@ log "Found $nconv conversation(s), $ntopic new topic(s)"
 if (( ntopic > 0 )); then
   RESEARCH_MODEL="$(pick_model)"
   log "Phase 2/3 — researching $ntopic topic(s) (model: $RESEARCH_MODEL)"
+  # shellcheck disable=SC2059  # The constant template intentionally owns placeholders.
   research_prompt=$(printf "$RESEARCH_PROMPT" "$FINDINGS" "$RESEARCH")
   run_copilot "$RESEARCH_MODEL" "$research_prompt" || { echo "research run failed" >&2; exit 1; }
 else
@@ -226,6 +228,7 @@ jq empty "$RESEARCH" 2>/dev/null || { echo "ERROR: research.json invalid" >&2; c
 
 WRITER_MODEL="$(pick_model)"
 log "Phase 3/3 — writing report (model: $WRITER_MODEL)"
+# shellcheck disable=SC2059  # The constant template intentionally owns placeholders.
 writer_prompt=$(printf "$WRITER_PROMPT" "$FINDINGS" "$RESEARCH" "$REPORT_PATH")
 run_copilot "$WRITER_MODEL" "$writer_prompt" || { echo "writer run failed" >&2; exit 1; }
 [[ -f "$REPORT_PATH" ]] || { echo "ERROR: writer produced no report" >&2; exit 1; }

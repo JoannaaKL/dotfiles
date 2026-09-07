@@ -11,7 +11,7 @@ export GONOPROXY=
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="spaceship"
-ENABLE_CORRECTION="true"
+ENABLE_CORRECTION="${ENABLE_CORRECTION:-false}"
 
 plugins=(git
          alias-finder
@@ -62,7 +62,7 @@ export JETBRAINS_LICENSE_SERVER=https://github.jetbrains-ide-services.com
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # BEGIN Agency MANAGED BLOCK
-if [[ ":${PATH}:" != *":/Users/joannaakl/.config/agency/CurrentVersion:"* ]]; then
-    export PATH="/Users/joannaakl/.config/agency/CurrentVersion:${PATH}"
+if [[ ":${PATH}:" != *":${HOME}/.config/agency/CurrentVersion:"* ]]; then
+    export PATH="${HOME}/.config/agency/CurrentVersion:${PATH}"
 fi
 # END Agency MANAGED BLOCK
