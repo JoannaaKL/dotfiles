@@ -116,8 +116,12 @@ install_pr_review_loop(){
     chmod +x "$SCRIPT_DIR/.local/bin/$cmd"
     link_into "$SCRIPT_DIR/.local/bin/$cmd" "$HOME/.local/bin/$cmd"
   done
-  link_into "$SCRIPT_DIR/.copilot/skills/pr-review-loop/SKILL.md" \
-            "$HOME/.copilot/skills/pr-review-loop/SKILL.md"
+  link_into "$SCRIPT_DIR/.copilot/skills/multi-model-pr-loop/SKILL.md" \
+            "$HOME/.copilot/skills/multi-model-pr-loop/SKILL.md"
+  local legacy_skill="$HOME/.copilot/skills/pr-review-loop/SKILL.md"
+  if [[ -L "$legacy_skill" && "$(readlink "$legacy_skill")" == "$SCRIPT_DIR/.copilot/skills/pr-review-loop/SKILL.md" ]]; then
+    rm "$legacy_skill"
+  fi
 }
 
 install_catchup(){

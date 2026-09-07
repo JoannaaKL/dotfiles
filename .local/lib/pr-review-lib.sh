@@ -18,9 +18,8 @@ else
     claude-opus-5
     claude-opus-4.8
     claude-opus-4.7
-    claude-sonnet-4.6
-    claude-sonnet-4.5
     claude-haiku-4.5
+    gpt-6-astra
     gpt-5.6-sol
     gpt-5.6-terra
     gpt-5.6-luna
@@ -32,9 +31,8 @@ else
     mai-code-1.1-flash
     mai-code-1-flash-picker
     grok-4.5
-    kimi-k3
-    kimi-k2.7-code
     grok-4.6
+    kimi-k2.7-code
   )
 fi
 

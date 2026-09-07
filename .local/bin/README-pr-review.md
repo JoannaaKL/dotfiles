@@ -95,24 +95,33 @@ the reviewer returns PASS.
 
 ## Model pool
 
-All three share a pool containing every concrete model currently returned by
-the subscription-aware Copilot CLI model catalog:
+All three share a default pool of 19 public, concrete model IDs from the
+authenticated Copilot CLI catalog (`CopilotClient.listModels()`), refreshed on
+2026-09-07:
 
 ```text
 claude-sonnet-5 claude-opus-5 claude-opus-4.8 claude-opus-4.7
-claude-sonnet-4.6 claude-sonnet-4.5 claude-haiku-4.5
-gpt-5.6-sol gpt-5.6-terra gpt-5.6-luna gpt-5.5 gpt-5.4 gpt-5.4-mini
-gpt-5.3-codex gpt-5-mini
+claude-haiku-4.5
+gpt-6-astra gpt-5.6-sol gpt-5.6-terra gpt-5.6-luna gpt-5.5
+gpt-5.4 gpt-5.4-mini gpt-5.3-codex gpt-5-mini
 mai-code-1.1-flash mai-code-1-flash-picker
-grok-4.5 grok-4.6 kimi-k3 kimi-k2.7-code
+grok-4.5 grok-4.6 kimi-k2.7-code
 ```
 
-`auto` is intentionally excluded because it does not identify a concrete model,
-so it cannot preserve the loop's distinct reviewer/fixer guarantee. Override
-the pool for a single run with an environment variable:
+`auto` is excluded because it does not identify a concrete model. Internal-only
+variants are also excluded. Sonnet 4.5, Sonnet 4.6, and Kimi K3 were removed
+because this CLI catalog no longer returns them; GPT-6 Astra was added.
+
+This is a snapshot, not runtime model discovery. Availability depends on the
+subscription and organization policies. Other Copilot clients may offer models
+that this CLI does not, including Gemini. Check the CLI's `/model` picker and
+[Copilot model availability](https://docs.github.com/en/copilot/reference/ai-models/supported-models)
+when refreshing the pool. Runs consume the subscription's AI credits.
+
+Override the pool for a single run with an environment variable:
 
 ```bash
-COPILOT_MODEL_POOL="gpt-5.6-sol claude-opus-4.8 grok-4.6" pr-review-loop <pr-url>
+COPILOT_MODEL_POOL="gpt-6-astra claude-opus-5 grok-4.6" pr-review-loop <pr-url>
 ```
 
 `pr-review` and `pr-address-feedback` need at least one model. `pr-review-loop`
@@ -148,6 +157,11 @@ change to the prompts, the standards, or the model pool lands in one place.
 
 ## Copilot skill
 
-`pr-review-loop` is also wired as a Copilot CLI skill, so inside a `copilot`
-session you can say "run the PR review loop on <url>" and it launches the
-command. The skill also documents the two standalone agents.
+The skill is named `multi-model-pr-loop` to distinguish it from the GitHub
+Copilot app's built-in PR review. Say "Use the multi-model-pr-loop skill on
+<PR URL>" to launch the custom loop rather than a one-shot review. Start a new
+session if the app still lists the old skill name.
+
+The shell commands keep their existing names. The installer links the renamed
+skill and removes only the old installer-managed skill symlink. The skill also
+documents the two standalone agents, which run only when explicitly requested.

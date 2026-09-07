@@ -16,6 +16,7 @@ Opinionated workstation + Codespaces bootstrap.
   - Delta (syntax highlighted pager) install
 - Managed Codespaces SSH config export (`export_codespace_cfg`)
 - Codespace cleanup utility (`clean-codespaces.sh --dry-run`)
+- Custom multi-model PR review/fix loop with the `multi-model-pr-loop` Copilot skill
 - Shell linting via GitHub Actions + local `make lint`.
 
 ## Libraries and Packages
@@ -37,7 +38,7 @@ Opinionated workstation + Codespaces bootstrap.
 - [ripgrep](https://github.com/BurntSushi/ripgrep) - Fast line-oriented search tool
 - [git-delta](https://github.com/dandavison/delta) - Syntax-highlighting pager for git
 - [GitHub CLI](https://cli.github.com/) - GitHub's official command-line tool
-- [GitHub Copilot CLI](https://github.com/github/gh-copilot) - AI-powered CLI extension for GitHub CLI
+- [GitHub Copilot CLI](https://github.com/github/copilot-cli) - Standalone coding agent used by the PR review commands
 
 ### Fonts
 
@@ -95,6 +96,7 @@ The `install.sh` script performs the following actions:
 3. **Symlinks dotfiles** - Creates symlinks for configuration files (`.gitconfig`, `.zshrc`, `.tmux.conf`, etc.) with automatic backup of existing files
 4. **Installs fonts** - Downloads and installs Meslo Nerd Font
 5. **Sets up Spaceship theme** - Clones and configures the Spaceship Zsh theme
+6. **Links PR review tools** - Installs the `pr-review`, `pr-address-feedback`, and `pr-review-loop` command symlinks, their shared library, and the `multi-model-pr-loop` skill
 
 ### Manual Setup (Optional)
 
@@ -103,6 +105,42 @@ If you prefer to install components individually:
 - **Oh My Zsh**: Follow the [installation guide](https://ohmyz.sh/#install)
 - **Spaceship Prompt**: See the [installation instructions](https://spaceship-prompt.sh/getting-started/)
 - **Nerd Fonts**: Download from [Nerd Fonts releases](https://github.com/ryanoasis/nerd-fonts/releases)
+
+## Multi-model PR Review Loop
+
+The custom [multi-model-pr-loop skill](.copilot/skills/multi-model-pr-loop/SKILL.md)
+runs repeated review/fix rounds with two distinct Copilot model IDs per round.
+It is separate from the GitHub Copilot app's built-in PR review.
+
+In a new app session, say:
+
+```text
+Use the multi-model-pr-loop skill on <PR URL>
+```
+
+The shell command keeps its original name:
+
+```bash
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:$PATH"
+pr-review-loop <pr-url> [max-iters]
+```
+
+Install the standalone `copilot` CLI separately and authenticate with
+`copilot login` and `gh auth login`. Node.js, `git`, and `jq` must also be on PATH.
+The old `gh copilot` extension is not a substitute for the standalone CLI.
+
+The loop clones the PR into a temporary checkout and stops at PASS or the
+iteration cap, which defaults to 6. Fixes are committed in that checkout but
+are not pushed, and no GitHub review is posted.
+
+As of 2026-09-07, the default pool contains 19 public model IDs from the
+authenticated Copilot CLI catalog, including GPT-6 Astra. `auto` and
+internal-only models are excluded. This is a snapshot, not automatic model
+discovery; availability depends on the subscription and organization policies.
+
+See the [PR review commands guide](.local/bin/README-pr-review.md) for the full
+model pool, custom model overrides, review-only and fix-only commands, and exit
+codes.
 
 ## Linting Shell Scripts
 
